@@ -1,0 +1,222 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="VSG_AS_CompressorControl" Id="{1f8fb20c-fe2a-45da-94bc-49146a9e8e76}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'OPC.UA.DA.JobMethod' := 'JobMethode_CompressorControl'}
+FUNCTION_BLOCK VSG_AS_CompressorControl
+VAR
+    MethodCall_CompressorControl : BOOL := FALSE;
+    ResetMethodCall : BOOL := FALSE;
+
+    Destination : BOOL := TRUE;
+
+    EncoderTargetPosition01 : UDINT;
+    EncoderTargetPosition02 : UDINT;
+    EncoderTargetPosition03 : UDINT;
+    EncoderTargetPosition04 : UDINT;
+    EncoderTargetPosition05 : UDINT;
+    EncoderTargetPosition06 : UDINT;
+
+    callCounterStart : ULINT;
+    callCounterCheckState : ULINT;
+    callCounterAbort : ULINT;
+
+    jobRunning : BOOL := FALSE;
+    jobFinished : BOOL := FALSE;
+    state : UDINT := 0;
+
+    MBS_VSG_VerticalMove : CompressorControl;
+
+    TON_TimeCompressor : TIME := T#0MS;
+    TON_TimeValve : TIME := T#0MS;
+    TON_TimePowerOffSelfSet : TIME := T#100MS;
+
+    PowerOffSelfSet : BOOL := TRUE;
+END_VAR
+
+VAR_INPUT
+    ESS : BOOL;
+
+    EncoderStartPosition01 : UDINT;
+    EncoderStartPosition02 : UDINT;
+    EncoderStartPosition03 : UDINT;
+    EncoderStartPosition04 : UDINT;
+    EncoderStartPosition05 : UDINT;
+    EncoderStartPosition06 : UDINT;
+
+    WorkpieceAtPickupPosition : BOOL;
+    AutomaticMode : BOOL;
+END_VAR
+
+VAR_OUTPUT
+    DO_CompressorVSG : BOOL;
+    DO_ValveVSG : BOOL;
+
+    VSG_ErrorDetected : BOOL;
+    VSG_ErrorCode : UDINT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//VSG_ErrorDetected := FALSE;
+//VSG_ErrorCode := 0;
+
+IF MethodCall_CompressorControl AND NOT WorkpieceAtPickupPosition THEN
+
+    VSG_ErrorDetected := TRUE;
+    VSG_ErrorCode := 1001;
+
+    DO_CompressorVSG := FALSE;
+    DO_ValveVSG := FALSE;
+
+    MethodCall_CompressorControl := FALSE;
+    ResetMethodCall := TRUE;
+
+    jobRunning := FALSE;
+    jobFinished := TRUE;
+    state := 900;
+
+ELSE
+
+    MBS_VSG_VerticalMove(
+        MethodCall := MethodCall_CompressorControl,
+        EmergencyStopSignal := NOT ESS,
+        Destination := Destination,
+        InitStateDrive_Input := FALSE,
+
+        DI01 := WorkpieceAtPickupPosition,
+        DI02 := FALSE,
+
+        DI03_EncoderStart01 := EncoderStartPosition01,
+        DI04_EncoderStart02 := EncoderStartPosition02,
+        DI05_EncoderStart03 := EncoderStartPosition03,
+        DI06_EncoderStart04 := EncoderStartPosition04,
+        DI07_EncoderStart05 := EncoderStartPosition05,
+        DI08_EncoderStart06 := EncoderStartPosition06,
+
+        DI09_EncoderTarget01 := EncoderTargetPosition01,
+        DI10_EncoderTarget02 := EncoderTargetPosition02,
+        DI11_EncoderTarget03 := EncoderTargetPosition03,
+        DI12_EncoderTarget04 := EncoderTargetPosition04,
+        DI13_EncoderTarget05 := EncoderTargetPosition05,
+        DI14_EncoderTarget06 := EncoderTargetPosition06,
+
+        PowerOFF_SelfSet := PowerOffSelfSet,
+        TON_Time_PowerOFFSelfSet := TON_TimePowerOffSelfSet,
+        TON_Time_Compressor := TON_TimeCompressor,
+        TON_Time_Valve := TON_TimeValve,
+        OperatingMode := AutomaticMode
+    );
+
+    DO_CompressorVSG := MBS_VSG_VerticalMove.DigitalOutputControl_01;
+    DO_ValveVSG := MBS_VSG_VerticalMove.DigitalOutputControl_02;
+    ResetMethodCall := MBS_VSG_VerticalMove.ResetMethodCall;
+
+    IF ResetMethodCall THEN
+        MethodCall_CompressorControl := FALSE;
+        jobRunning := FALSE;
+        jobFinished := TRUE;
+        state := 100;
+    END_IF;
+
+END_IF;]]></ST>
+    </Implementation>
+    <Method Name="Abort" Id="{3e8afcd8-451e-4c34-80b4-515e939c2ca4}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Abort : HRESULT
+VAR_INPUT
+    hdl : UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterAbort := callCounterAbort + 1;
+
+MethodCall_CompressorControl := FALSE;
+ResetMethodCall := TRUE;
+
+DO_CompressorVSG := FALSE;
+DO_ValveVSG := FALSE;
+
+jobRunning := FALSE;
+jobFinished := TRUE;
+state := 999;
+
+Abort := 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckState" Id="{5c4858a5-0649-4b9c-a57f-4bd1e29f9303}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD CheckState : HRESULT
+VAR_INPUT
+    hdl : UDINT;
+END_VAR
+
+VAR_OUTPUT
+    bBusy : BOOL;
+    State : UDINT;
+    IsDone : BOOL;
+    HasError : BOOL;
+    ErrorCode : UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterCheckState := callCounterCheckState + 1;
+
+bBusy := jobRunning;
+State := state;
+IsDone := jobFinished;
+HasError := VSG_ErrorDetected;
+ErrorCode := VSG_ErrorCode;
+
+CheckState := 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Start" Id="{d1fbf111-2516-419d-8473-5534864e45e7}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Start : HRESULT
+VAR_INPUT
+    MethodCall : BOOL;
+    DestinationReached : BOOL;
+    EncoderTargetPosition_01 : UDINT;
+    EncoderTargetPosition_02 : UDINT;
+    EncoderTargetPosition_03 : UDINT;
+    EncoderTargetPosition_04 : UDINT;
+    EncoderTargetPosition_05 : UDINT;
+    EncoderTargetPosition_06 : UDINT;
+END_VAR
+
+VAR_OUTPUT
+    hdl : UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterStart := callCounterStart + 1;
+
+IF NOT jobRunning THEN
+	
+	IF MethodCall THEN
+        OPCUA.lastExecutedProcess := 'VSG_Skill_SuctionProcess';
+        OPCUA.lastExecutedSkill := 'VSG_AS_CompressorControl';
+    END_IF;
+	
+    MethodCall_CompressorControl := MethodCall;
+    Destination := DestinationReached;
+
+    EncoderTargetPosition01 := EncoderTargetPosition_01;
+    EncoderTargetPosition02 := EncoderTargetPosition_02;
+    EncoderTargetPosition03 := EncoderTargetPosition_03;
+    EncoderTargetPosition04 := EncoderTargetPosition_04;
+    EncoderTargetPosition05 := EncoderTargetPosition_05;
+    EncoderTargetPosition06 := EncoderTargetPosition_06;
+
+    jobRunning := TRUE;
+    jobFinished := FALSE;
+    state := 1;
+
+    hdl := 1;
+    Start := 0;
+
+ELSE
+
+    hdl := 0;
+    Start := 16#800700AA;
+
+END_IF;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

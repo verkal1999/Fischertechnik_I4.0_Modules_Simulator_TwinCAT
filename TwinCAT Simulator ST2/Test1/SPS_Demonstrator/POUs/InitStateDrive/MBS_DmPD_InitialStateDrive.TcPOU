@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="MBS_DmPD_InitialStateDrive" Id="{ca0aeaf5-240e-4407-b065-3fc5dc536d19}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK MBS_DmPD_InitialStateDrive
+VAR_INPUT
+	MethodCall_InitDrive : BOOL;
+	ESS : BOOL;
+	InputInitialStateDrive : BOOL;
+	DI02_CW : BOOL;
+	DI01_CCW : BOOL;
+	DI02_CCW : BOOL;	
+	InitDriveMode : BOOL;
+END_VAR
+VAR_OUTPUT
+	MotorControl_CW : BOOL;
+	MotorControl_CCW : BOOL;
+	ResetMethodCallRotateCW : BOOL;
+	ResetMethodCallRotateCCW : BOOL;
+END_VAR
+VAR
+	DirectionCW : STRING;
+	DirectionCCW : STRING;
+	MBS_DmPD_InitDrive_Rotate_CW: AxisControl_MultipleInputSensors;
+	MBS_DmPD_InitDrive_Rotate_CCW: AxisControl_MultipleInputSensors;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[MBS_DmPD_InitDrive_Rotate_CW(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := ESS,
+    Direction := DirectionCW,
+    InitStateDrive_Input := InputInitialStateDrive,
+    DI01 := ,
+    DI02 := DI02_CW,
+    TouchSensorRelief := ,
+    TOF_Time_MotorControl := ,
+    TOF_Time_TouchSensorRelief := ,
+    OperatingMode := InitDriveMode
+);
+MotorControl_CW := MBS_DmPD_InitDrive_Rotate_CW.DigitalOutputControl_01;
+MBS_DmPD_InitDrive_Rotate_CCW(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := ESS,
+    Direction := DirectionCCW,
+    InitStateDrive_Input := ,
+    DI01 := DI01_CCW,
+    DI02 := DI02_CCW,
+    TouchSensorRelief := ,
+    TOF_Time_MotorControl := ,
+    TOF_Time_TouchSensorRelief := ,
+    OperatingMode := InitDriveMode
+);
+MotorControl_CCW := MBS_DmPD_InitDrive_Rotate_CCW.DigitalOutputControl_01;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

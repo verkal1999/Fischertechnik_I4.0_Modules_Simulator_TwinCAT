@@ -1,0 +1,690 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="HRL_NMethod_Auslagern" Id="{267aa6df-aa05-4302-bb1e-420f57213bff}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'OPC.UA.DA.JobMethod' := 'HRL_NMethod_Auslagern'}
+FUNCTION_BLOCK HRL_NMethod_Auslagern
+VAR_INPUT
+    ESS_OK : BOOL;
+    AutomaticMode : BOOL;
+
+    HRL_Enc_horizontal_I1 : UDINT;
+    HRL_Enc_horizontal_I2 : UDINT;
+    HRL_Enc_vertikal_I1 : UDINT;
+    HRL_Enc_vertikal_I2 : UDINT;
+
+    HRL_Ref_Taster_horizontal : BOOL;
+    HRL_Ref_Taster_vertikal : BOOL;
+    HRL_Ref_Taster_Ausleger_vorne : BOOL;
+    HRL_Ref_Taster_Ausleger_hinten : BOOL;
+
+    HRL_LS_innen : BOOL;
+    HRL_LS_aussen : BOOL;
+END_VAR
+
+VAR_OUTPUT
+    REQ_CB_forwards : BOOL;
+    REQ_CB_backwards : BOOL;
+
+    REQ_RGB_Forwards : BOOL;
+    REQ_RGB_Backwards : BOOL;
+
+    REQ_RGB_VerticalDown : BOOL;
+    REQ_RGB_VerticalUp : BOOL;
+
+    REQ_RGB_HorizontalForward : BOOL;
+    REQ_RGB_HorizontalBackward : BOOL;
+
+    Busy : BOOL;
+    Done : BOOL;
+    Error : BOOL;
+    ErrorId : UDINT;
+    CurrentStep : UDINT;
+END_VAR
+
+VAR
+    MethodCall_Auslagern : BOOL := FALSE;
+
+    callCounterStart : ULINT := 0;
+    callCounterAbort : ULINT := 0;
+    callCounterCheckState : ULINT := 0;
+
+    jobRunning : BOOL := FALSE;
+    jobFinished : BOOL := FALSE;
+
+    step : UDINT := 0;
+    lastStep : UDINT := 0;
+    bStepChanged : BOOL := FALSE;
+
+    TargetHorizontalShelf_I1 : UDINT := 0;
+    TargetHorizontalShelf_I2 : UDINT := 0;
+    TargetVerticalShelf_I1 : UDINT := 0;
+    TargetVerticalShelf_I2 : UDINT := 0;
+
+    TargetHorizontalTransfer_I1 : UDINT := 0;
+    TargetHorizontalTransfer_I2 : UDINT := 0;
+    TargetVerticalTransfer_I1 : UDINT := 0;
+    TargetVerticalTransfer_I2 : UDINT := 0;
+
+    ActiveTargetHorizontal_I1 : UDINT := 0;
+    ActiveTargetHorizontal_I2 : UDINT := 0;
+    ActiveTargetVertical_I1 : UDINT := 0;
+    ActiveTargetVertical_I2 : UDINT := 0;
+
+    WatchdogTime : TIME := T#15S;
+
+    cmdHorizontal : BOOL := FALSE;
+    cmdVertical : BOOL := FALSE;
+    cmdAuslegerForward : BOOL := FALSE;
+    cmdAuslegerBackward : BOOL := FALSE;
+    cmdConveyorForward : BOOL := FALSE;
+
+    dirHorizontalToRegal : BOOL := FALSE;
+    dirVerticalDown : BOOL := FALSE;
+
+    bOppositeCommandError : BOOL := FALSE;
+    bAbortRequest : BOOL := FALSE;
+
+    fbHorizontal : AxisControl_Encoder;
+    fbVertical : AxisControl_Encoder;
+    fbAuslegerForward : AxisControl_MultipleInputSensors;
+    fbAuslegerBackward : AxisControl_MultipleInputSensors;
+    fbConveyorForward : AxisControl_MultipleInputSensors;
+
+    tonWatchdog : TON;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[REQ_CB_forwards := FALSE;
+REQ_CB_backwards := FALSE;
+
+REQ_RGB_Forwards := FALSE;
+REQ_RGB_Backwards := FALSE;
+
+REQ_RGB_VerticalDown := FALSE;
+REQ_RGB_VerticalUp := FALSE;
+
+REQ_RGB_HorizontalForward := FALSE;
+REQ_RGB_HorizontalBackward := FALSE;
+
+bOppositeCommandError := FALSE;
+
+bStepChanged := (step <> lastStep);
+lastStep := step;
+
+IF bAbortRequest THEN
+    cmdHorizontal := FALSE;
+    cmdVertical := FALSE;
+    cmdAuslegerForward := FALSE;
+    cmdAuslegerBackward := FALSE;
+    cmdConveyorForward := FALSE;
+
+    MethodCall_Auslagern := FALSE;
+
+    Busy := FALSE;
+    Done := FALSE;
+
+    jobRunning := FALSE;
+    jobFinished := TRUE;
+
+    // Fehlerstatus bewusst nicht überschreiben
+    step := 0;
+    bAbortRequest := FALSE;
+END_IF;
+
+IF bStepChanged THEN
+    tonWatchdog(IN := FALSE, PT := WatchdogTime);
+END_IF;
+
+tonWatchdog(
+    IN := jobRunning AND (step <> 0) AND (step <> 100) AND (step <> 900),
+    PT := WatchdogTime
+);
+
+IF tonWatchdog.Q THEN
+    Error := TRUE;
+    ErrorId := 100;
+    step := 900;
+END_IF;
+
+IF jobRunning AND NOT ESS_OK THEN
+    Error := TRUE;
+    ErrorId := 1;
+    step := 900;
+END_IF;
+
+IF jobRunning AND NOT AutomaticMode THEN
+    Error := TRUE;
+    ErrorId := 2;
+    step := 900;
+END_IF;
+
+IF step = 50 THEN
+    ActiveTargetHorizontal_I1 := TargetHorizontalTransfer_I1;
+    ActiveTargetHorizontal_I2 := TargetHorizontalTransfer_I2;
+ELSE
+    ActiveTargetHorizontal_I1 := TargetHorizontalShelf_I1;
+    ActiveTargetHorizontal_I2 := TargetHorizontalShelf_I2;
+END_IF;
+
+IF step = 60 THEN
+    ActiveTargetVertical_I1 := TargetVerticalTransfer_I1;
+    ActiveTargetVertical_I2 := TargetVerticalTransfer_I2;
+ELSE
+    ActiveTargetVertical_I1 := TargetVerticalShelf_I1;
+    ActiveTargetVertical_I2 := TargetVerticalShelf_I2;
+END_IF;
+
+dirHorizontalToRegal := (HRL_Enc_horizontal_I1 < ActiveTargetHorizontal_I1);
+dirVerticalDown := (HRL_Enc_vertikal_I1 < ActiveTargetVertical_I1);
+
+fbHorizontal(
+    MethodCall := cmdHorizontal,
+    EmergencyStopSignal := NOT ESS_OK,
+    Direction := dirHorizontalToRegal,
+    InitStateDrive_Input := FALSE,
+    DI01 := HRL_Ref_Taster_horizontal,
+    DI02_EncoderStart01 := HRL_Enc_horizontal_I1,
+    DI03_EncoderTarget01 := ActiveTargetHorizontal_I1,
+    DI04_EncoderStart02 := HRL_Enc_horizontal_I2,
+    DI05_EncoderTarget02 := ActiveTargetHorizontal_I2,
+    TouchSensorRelief := FALSE,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := T#0MS,
+    OperatingMode := AutomaticMode
+);
+
+fbVertical(
+    MethodCall := cmdVertical,
+    EmergencyStopSignal := NOT ESS_OK,
+    Direction := dirVerticalDown,
+    InitStateDrive_Input := FALSE,
+    DI01 := HRL_Ref_Taster_vertikal,
+    DI02_EncoderStart01 := HRL_Enc_vertikal_I1,
+    DI03_EncoderTarget01 := ActiveTargetVertical_I1,
+    DI04_EncoderStart02 := HRL_Enc_vertikal_I2,
+    DI05_EncoderTarget02 := ActiveTargetVertical_I2,
+    TouchSensorRelief := FALSE,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := T#0MS,
+    OperatingMode := AutomaticMode
+);
+
+fbAuslegerForward(
+    MethodCall := cmdAuslegerForward,
+    EmergencyStopSignal := NOT ESS_OK,
+    Direction := TRUE,
+    InitStateDrive_Input := FALSE,
+    DI01 := HRL_Ref_Taster_Ausleger_hinten,
+    DI02 := HRL_Ref_Taster_Ausleger_vorne,
+    TouchSensorRelief := FALSE,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := T#0MS,
+    OperatingMode := AutomaticMode
+);
+
+fbAuslegerBackward(
+    MethodCall := cmdAuslegerBackward,
+    EmergencyStopSignal := NOT ESS_OK,
+    Direction := TRUE,
+    InitStateDrive_Input := FALSE,
+    DI01 := HRL_Ref_Taster_Ausleger_vorne,
+    DI02 := HRL_Ref_Taster_Ausleger_hinten,
+    TouchSensorRelief := FALSE,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := T#0MS,
+    OperatingMode := AutomaticMode
+);
+
+fbConveyorForward(
+    MethodCall := cmdConveyorForward,
+    EmergencyStopSignal := NOT ESS_OK,
+    Direction := TRUE,
+    InitStateDrive_Input := FALSE,
+    DI01 := HRL_LS_innen,
+    DI02 := HRL_LS_aussen,
+    TouchSensorRelief := FALSE,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := T#0MS,
+    OperatingMode := AutomaticMode
+);
+
+CASE step OF
+
+    0:
+        Busy := FALSE;
+
+        cmdHorizontal := FALSE;
+        cmdVertical := FALSE;
+        cmdAuslegerForward := FALSE;
+        cmdAuslegerBackward := FALSE;
+        cmdConveyorForward := FALSE;
+
+        jobRunning := FALSE;
+
+        // WICHTIG:
+        // Done, Error, ErrorId und jobFinished hier NICHT pauschal löschen.
+        // Diese Werte bleiben stehen, bis ein neuer Auftrag startet.
+
+        IF MethodCall_Auslagern THEN
+
+            IF NOT ESS_OK THEN
+                Error := TRUE;
+                ErrorId := 1;
+                MethodCall_Auslagern := FALSE;
+                jobFinished := TRUE;
+                step := 900;
+
+            ELSIF NOT AutomaticMode THEN
+                Error := TRUE;
+                ErrorId := 2;
+                MethodCall_Auslagern := FALSE;
+                jobFinished := TRUE;
+                step := 900;
+
+            ELSE
+                Done := FALSE;
+                Error := FALSE;
+                ErrorId := 0;
+
+                Busy := TRUE;
+                jobRunning := TRUE;
+                jobFinished := FALSE;
+
+                step := 10;
+            END_IF;
+
+        END_IF;
+
+
+    10:
+        Busy := TRUE;
+
+        cmdHorizontal := TRUE;
+        cmdVertical := FALSE;
+        cmdAuslegerForward := FALSE;
+        cmdAuslegerBackward := FALSE;
+        cmdConveyorForward := FALSE;
+
+        IF dirHorizontalToRegal THEN
+            REQ_RGB_HorizontalForward := fbHorizontal.DigitalOutputControl_01;
+        ELSE
+            REQ_RGB_HorizontalBackward := fbHorizontal.DigitalOutputControl_01;
+        END_IF;
+
+        IF REQ_RGB_HorizontalForward AND REQ_RGB_HorizontalBackward THEN
+            Error := TRUE;
+            ErrorId := 200;
+            step := 900;
+        END_IF;
+
+        IF fbHorizontal.ResetMethodCall THEN
+            cmdHorizontal := FALSE;
+            step := 20;
+        END_IF;
+
+
+    20:
+        Busy := TRUE;
+
+        cmdHorizontal := FALSE;
+        cmdVertical := TRUE;
+        cmdAuslegerForward := FALSE;
+        cmdAuslegerBackward := FALSE;
+        cmdConveyorForward := FALSE;
+
+        IF dirVerticalDown THEN
+            REQ_RGB_VerticalDown := fbVertical.DigitalOutputControl_01;
+        ELSE
+            REQ_RGB_VerticalUp := fbVertical.DigitalOutputControl_01;
+        END_IF;
+
+        IF REQ_RGB_VerticalDown AND REQ_RGB_VerticalUp THEN
+            Error := TRUE;
+            ErrorId := 201;
+            step := 900;
+        END_IF;
+
+        IF fbVertical.ResetMethodCall THEN
+            cmdVertical := FALSE;
+            step := 30;
+        END_IF;
+
+
+    30:
+        Busy := TRUE;
+
+        cmdHorizontal := FALSE;
+        cmdVertical := FALSE;
+        cmdAuslegerForward := TRUE;
+        cmdAuslegerBackward := FALSE;
+        cmdConveyorForward := FALSE;
+
+        REQ_RGB_Forwards := fbAuslegerForward.DigitalOutputControl_01;
+
+        IF REQ_RGB_Forwards AND REQ_RGB_Backwards THEN
+            Error := TRUE;
+            ErrorId := 202;
+            step := 900;
+        END_IF;
+
+        IF fbAuslegerForward.ResetMethodCall THEN
+            cmdAuslegerForward := FALSE;
+            step := 40;
+        END_IF;
+
+
+    40:
+        Busy := TRUE;
+
+        cmdHorizontal := FALSE;
+        cmdVertical := FALSE;
+        cmdAuslegerForward := FALSE;
+        cmdAuslegerBackward := TRUE;
+        cmdConveyorForward := FALSE;
+
+        REQ_RGB_Backwards := fbAuslegerBackward.DigitalOutputControl_01;
+
+        IF REQ_RGB_Forwards AND REQ_RGB_Backwards THEN
+            Error := TRUE;
+            ErrorId := 203;
+            step := 900;
+        END_IF;
+
+        IF fbAuslegerBackward.ResetMethodCall THEN
+            cmdAuslegerBackward := FALSE;
+            step := 50;
+        END_IF;
+
+
+    50:
+        Busy := TRUE;
+
+        cmdHorizontal := TRUE;
+        cmdVertical := FALSE;
+        cmdAuslegerForward := FALSE;
+        cmdAuslegerBackward := FALSE;
+        cmdConveyorForward := FALSE;
+
+        IF dirHorizontalToRegal THEN
+            REQ_RGB_HorizontalForward := fbHorizontal.DigitalOutputControl_01;
+        ELSE
+            REQ_RGB_HorizontalBackward := fbHorizontal.DigitalOutputControl_01;
+        END_IF;
+
+        IF REQ_RGB_HorizontalForward AND REQ_RGB_HorizontalBackward THEN
+            Error := TRUE;
+            ErrorId := 204;
+            step := 900;
+        END_IF;
+
+        IF fbHorizontal.ResetMethodCall THEN
+            cmdHorizontal := FALSE;
+            step := 60;
+        END_IF;
+
+
+    60:
+        Busy := TRUE;
+
+        cmdHorizontal := FALSE;
+        cmdVertical := TRUE;
+        cmdAuslegerForward := FALSE;
+        cmdAuslegerBackward := FALSE;
+        cmdConveyorForward := FALSE;
+
+        IF dirVerticalDown THEN
+            REQ_RGB_VerticalDown := fbVertical.DigitalOutputControl_01;
+        ELSE
+            REQ_RGB_VerticalUp := fbVertical.DigitalOutputControl_01;
+        END_IF;
+
+        IF REQ_RGB_VerticalDown AND REQ_RGB_VerticalUp THEN
+            Error := TRUE;
+            ErrorId := 205;
+            step := 900;
+        END_IF;
+
+        IF fbVertical.ResetMethodCall THEN
+            cmdVertical := FALSE;
+            step := 65;
+        END_IF;
+
+
+    65:
+        Busy := TRUE;
+
+        cmdHorizontal := FALSE;
+        cmdVertical := FALSE;
+        cmdAuslegerForward := FALSE;
+        cmdAuslegerBackward := FALSE;
+        cmdConveyorForward := FALSE;
+
+        IF HRL_LS_innen THEN
+            step := 70;
+        END_IF;
+
+
+    70:
+        Busy := TRUE;
+
+        cmdHorizontal := FALSE;
+        cmdVertical := FALSE;
+        cmdAuslegerForward := FALSE;
+        cmdAuslegerBackward := FALSE;
+        cmdConveyorForward := TRUE;
+
+        REQ_CB_forwards := fbConveyorForward.DigitalOutputControl_01;
+
+        IF REQ_CB_forwards AND REQ_CB_backwards THEN
+            Error := TRUE;
+            ErrorId := 206;
+            step := 900;
+        END_IF;
+
+        IF fbConveyorForward.ResetMethodCall THEN
+            cmdConveyorForward := FALSE;
+            step := 100;
+        END_IF;
+
+
+    100:
+        REQ_CB_forwards := FALSE;
+        REQ_CB_backwards := FALSE;
+
+        REQ_RGB_Forwards := FALSE;
+        REQ_RGB_Backwards := FALSE;
+
+        REQ_RGB_VerticalDown := FALSE;
+        REQ_RGB_VerticalUp := FALSE;
+
+        REQ_RGB_HorizontalForward := FALSE;
+        REQ_RGB_HorizontalBackward := FALSE;
+
+        cmdHorizontal := FALSE;
+        cmdVertical := FALSE;
+        cmdAuslegerForward := FALSE;
+        cmdAuslegerBackward := FALSE;
+        cmdConveyorForward := FALSE;
+
+        Busy := FALSE;
+        Done := TRUE;
+        Error := FALSE;
+        ErrorId := 0;
+
+        jobRunning := FALSE;
+        jobFinished := TRUE;
+
+        MethodCall_Auslagern := FALSE;
+
+        step := 0;
+
+
+    900:
+        REQ_CB_forwards := FALSE;
+        REQ_CB_backwards := FALSE;
+
+        REQ_RGB_Forwards := FALSE;
+        REQ_RGB_Backwards := FALSE;
+
+        REQ_RGB_VerticalDown := FALSE;
+        REQ_RGB_VerticalUp := FALSE;
+
+        REQ_RGB_HorizontalForward := FALSE;
+        REQ_RGB_HorizontalBackward := FALSE;
+
+        cmdHorizontal := FALSE;
+        cmdVertical := FALSE;
+        cmdAuslegerForward := FALSE;
+        cmdAuslegerBackward := FALSE;
+        cmdConveyorForward := FALSE;
+
+        Busy := FALSE;
+        Done := FALSE;
+
+        jobRunning := FALSE;
+        jobFinished := TRUE;
+
+        MethodCall_Auslagern := FALSE;
+
+        // Error und ErrorId absichtlich stehen lassen
+        step := 0;
+
+ELSE
+    REQ_CB_forwards := FALSE;
+    REQ_CB_backwards := FALSE;
+
+    REQ_RGB_Forwards := FALSE;
+    REQ_RGB_Backwards := FALSE;
+
+    REQ_RGB_VerticalDown := FALSE;
+    REQ_RGB_VerticalUp := FALSE;
+
+    REQ_RGB_HorizontalForward := FALSE;
+    REQ_RGB_HorizontalBackward := FALSE;
+
+    cmdHorizontal := FALSE;
+    cmdVertical := FALSE;
+    cmdAuslegerForward := FALSE;
+    cmdAuslegerBackward := FALSE;
+    cmdConveyorForward := FALSE;
+
+    Busy := FALSE;
+    Done := FALSE;
+    Error := TRUE;
+    ErrorId := 998;
+
+    jobRunning := FALSE;
+    jobFinished := TRUE;
+
+    MethodCall_Auslagern := FALSE;
+
+    step := 0;
+END_CASE;
+
+CurrentStep := step;
+]]></ST>
+    </Implementation>
+    <Method Name="Abort" Id="{027c1bd1-7069-4c74-9cda-818c94642530}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Abort : HRESULT
+VAR_INPUT
+    hdl : UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterAbort := callCounterAbort + 1;
+
+bAbortRequest := TRUE;
+
+Abort := 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckState" Id="{499f154c-928d-44f9-8ca9-5b0118da750a}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD CheckState : HRESULT
+VAR_INPUT
+    hdl : UDINT;
+END_VAR
+
+VAR_OUTPUT
+    bBusy : BOOL;
+    State : UDINT;
+    IsDone : BOOL;
+    HasError : BOOL;
+    ErrorCode : UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterCheckState := callCounterCheckState + 1;
+
+bBusy := jobRunning;
+State := CurrentStep;
+IsDone := jobFinished;
+HasError := Error;
+ErrorCode := ErrorId;
+
+CheckState := 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Start" Id="{7c126c2b-644a-4dbb-a80c-20afe5c063c1}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Start : HRESULT
+VAR_INPUT
+    MethodCall : BOOL;
+
+    HorizontalShelf_I1 : UDINT;
+    HorizontalShelf_I2 : UDINT;
+    VerticalShelf_I1 : UDINT;
+    VerticalShelf_I2 : UDINT;
+
+    HorizontalTransfer_I1 : UDINT;
+    HorizontalTransfer_I2 : UDINT;
+    VerticalTransfer_I1 : UDINT;
+    VerticalTransfer_I2 : UDINT;
+
+    Timeout : TIME;
+END_VAR
+
+VAR_OUTPUT
+    hdl : UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterStart := callCounterStart + 1;
+
+IF NOT jobRunning THEN
+	 IF MethodCall THEN
+        OPCUA.lastExecutedProcess := 'HRL_NMethod_Auslagern';
+        OPCUA.lastExecutedSkill := 'HRL_NMethod_Auslagern';
+    END_IF;
+    MethodCall_Auslagern := MethodCall;
+
+    TargetHorizontalShelf_I1 := HorizontalShelf_I1;
+    TargetHorizontalShelf_I2 := HorizontalShelf_I2;
+    TargetVerticalShelf_I1 := VerticalShelf_I1;
+    TargetVerticalShelf_I2 := VerticalShelf_I2;
+
+    TargetHorizontalTransfer_I1 := HorizontalTransfer_I1;
+    TargetHorizontalTransfer_I2 := HorizontalTransfer_I2;
+    TargetVerticalTransfer_I1 := VerticalTransfer_I1;
+    TargetVerticalTransfer_I2 := VerticalTransfer_I2;
+
+    IF Timeout > T#0MS THEN
+        WatchdogTime := Timeout;
+    ELSE
+        WatchdogTime := T#15S;
+    END_IF;
+
+    // Neuer Auftrag löscht alten Abschlussstatus
+    jobFinished := FALSE;
+    Done := FALSE;
+    Error := FALSE;
+    ErrorId := 0;
+
+    hdl := 1;
+    Start := 0;
+ELSE
+    hdl := 0;
+    Start := 16#800700AA;
+END_IF;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

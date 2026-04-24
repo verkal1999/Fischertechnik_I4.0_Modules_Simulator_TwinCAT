@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <GVL Name="GVL_HRL_Sim" Id="{a078d54c-0633-4a97-801c-9386650f350b}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	// Spiegel von GVL_HRL (Eingänge)
+    HRL_Enc_horizontal_I1 : UDINT;
+	// udiDI%47.0_A2_5
+	HRL_Enc_horizontal_I2 : UDINT;
+	// udiDI%53.0_A2_5
+	HRL_Enc_vertikal_I1 : UDINT;
+	// udiDI%59.0_A2_5
+	HRL_Enc_vertikal_I2 : UDINT;
+	// xDI%136.0_A2_2
+	HRL_Ref_Taster_horizontal : BOOL;
+	// xDI%136.1_A2_1
+	HRL_LS_innen : BOOL;
+	// xDI%136.2_A2_1
+	HRL_LS_aussen : BOOL;
+	// xDI%136.3_A2_2
+	HRL_Ref_Taster_vertikal : BOOL;
+	// xDI%136.4_A2_3
+	HRL_Spursensor_1_unten : BOOL;
+	// xDI%136.5_A2_3
+	HRL_Spursensor_2_oben : BOOL;
+	// xDI%136.6_A2_2
+	HRL_Ref_Taster_Ausleger_vorne : BOOL;
+	// xDI%136.7_A2_2
+	HRL_Ref_Taster_Ausleger_hinten : BOOL;
+	// xDO%111.0_A2_2	
+	HRL_MOT_Foerderband_vorwaerts : BOOL;
+	// xDO%111.1_A2_2
+	HRL_MOT_Foerderband_rueckwaerts : BOOL;
+	// xDO%111.2_A2_4
+	HRL_MOT_horizontal_zum_Regal : BOOL;
+	// xDO%111.3_A2_4
+	HRL_MOT_horizontal_zum_Foerderband : BOOL;
+	// xDO%111.4_A2_4
+	HRL_MOT_vertikal_runter : BOOL;
+	// xDO%111.5_A2_4
+	HRL_MOT_vertikal_hoch : BOOL;
+	// xDO%111.6_A2_4
+	HRL_MOT_Ausleger_vorwaerts : BOOL;
+	// xDO%111.7_A2_4
+	HRL_MOT_Ausleger_rueckwaerts : BOOL;
+	HRL_K1_1_Zaehler_Zuruecksetzen : BOOL;
+	HRL_K1_2_Zaehler_Zuruecksetzen : BOOL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

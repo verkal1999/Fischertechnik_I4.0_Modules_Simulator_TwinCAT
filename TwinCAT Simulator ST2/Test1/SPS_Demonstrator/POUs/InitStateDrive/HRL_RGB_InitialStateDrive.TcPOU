@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="HRL_RGB_InitialStateDrive" Id="{d9c577ae-83a0-4809-a2cf-51ec383a144a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK HRL_RGB_InitialStateDrive
+VAR_INPUT
+	MethodCall_InitDrive		: BOOL;
+	ESS							: BOOL;
+	InputInitDriveMode			: BOOL;
+	TouchSensor01_SRM			: BOOL;
+	TouchSensor02_RGB_vertical	: BOOL;
+	TouchSensor03_RGB_horizontal: BOOL;
+	TOF_Time_TSR				: TIME;
+	InitDriveMode 				: BOOL;
+END_VAR
+
+VAR_OUTPUT
+	SRM_MotorBackwards: BOOL;
+	SRM_MotorForwards: BOOL;
+	RGB_VerticalUp: BOOL;
+	RGB_VerticalDown: BOOL;
+	RGB_HorizontalForwards: BOOL;
+	RGB_HorizontalBackwards: BOOL;
+	ResetMethodCall_SRM	: BOOL;
+	ResetMethodCall_RGB_Vertical	: BOOL;
+	ResetMethodCall_RGB_Horizontal	: BOOL;
+	Count_SRM_MotorBackw : INT;
+	Count_SRM_MotorForw : INT;
+END_VAR
+VAR
+	TSR : BOOL := TRUE;
+	DirectionVerticalSRM : BOOL := TRUE;
+	DirectionVertical : BOOL := TRUE;
+	DirectionHorizontal : BOOL := TRUE;
+	
+	HRL_RGB_SRM_InitDrive: AxisControl_MultipleInputSensors;
+	HRL_RGB_Vertical_InitDrive: AxisControl_MultipleInputSensors;
+	HRL_RGB_Horizontal_InitDrive: AxisControl_MultipleInputSensors;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[HRL_RGB_SRM_InitDrive(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := ESS,
+    Direction := DirectionVerticalSRM,
+    InitStateDrive_Input := InputInitDriveMode,
+    DI01 := FALSE,
+    DI02 := TouchSensor01_SRM,
+    TouchSensorRelief := TSR,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := TOF_Time_TSR,
+    OperatingMode := InitDriveMode
+);
+SRM_MotorBackwards := HRL_RGB_SRM_InitDrive.DigitalOutputControl_01;
+
+HRL_RGB_Vertical_InitDrive(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := ESS,
+    Direction := DirectionVertical,
+    InitStateDrive_Input := InputInitDriveMode,
+    DI01 := FALSE,
+    DI02 := TouchSensor02_RGB_vertical,
+    TouchSensorRelief := TSR,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := TOF_Time_TSR,
+    OperatingMode := InitDriveMode
+);
+RGB_VerticalUp := HRL_RGB_Vertical_InitDrive.DigitalOutputControl_01;
+
+HRL_RGB_Horizontal_InitDrive(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := ESS,
+    Direction := DirectionHorizontal,
+    InitStateDrive_Input := InputInitDriveMode,
+    DI01 := FALSE,
+    DI02 := TouchSensor03_RGB_horizontal,
+    TouchSensorRelief := TSR,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := TOF_Time_TSR,
+    OperatingMode := InitDriveMode
+);
+RGB_HorizontalBackwards := HRL_RGB_Horizontal_InitDrive.DigitalOutputControl_01;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

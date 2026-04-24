@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="MBS_CB_AS_HorizontalMove" Id="{5bf599bc-3aed-4e57-98ce-f498ad4286f3}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'OPC.UA.DA.JobMethod' := 'JobMethode_HorizontalMove'}
+FUNCTION_BLOCK MBS_CB_AS_HorizontalMove
+VAR
+	AlwaysTrue : BOOL := TRUE;
+	// Used for debugging purposes to display InputArguments of method call
+	MethodCall_HorizontalMove : BOOL := FALSE; // used to store InputArg "MethodCall" from Start() method
+	ResetMethodCall	: BOOL := FALSE;	
+	DirectionHorizontal : STRING; // defines movement direction
+	callCounterStart : ULINT; // counts how many times the Start() method has been called
+	callCounterCheckState : ULINT; // counts how many times the CheckState() method has been called
+	callCounterAbort : ULINT; // counts how many times the Abort() method has been called
+	
+	// Variables to determine if a job has been started (Start() method has been called) or finished
+	jobRunning : BOOL;
+	jobFinished : BOOL;
+
+	// State machine variable
+	state : UDINT;
+	
+	// FB Intatziation Variable
+	MBS_CB_HorizontalMove : AxisControl_MultipleInputSensors;
+END_VAR
+	
+VAR_INPUT
+	ESS: BOOL;
+	TouchSensor_01 : BOOL;
+	LightSensor_01 : BOOL;
+	TOF_Time_MotorControl : TIME;
+	AutomaticMode: BOOL;
+END_VAR
+
+VAR_OUTPUT
+	DO_MovingHorizontalCB_01 : BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[MBS_CB_HorizontalMove(
+    MethodCall := MethodCall_HorizontalMove,
+    EmergencyStopSignal := ESS,
+    Direction := DirectionHorizontal,
+    InitStateDrive_Input := ,
+    DI01 := TouchSensor_01,
+    DI02 := LightSensor_01,
+    TouchSensorRelief := ,
+    TOF_Time_MotorControl := TOF_Time_MotorControl,
+    TOF_Time_TouchSensorRelief := ,
+    OperatingMode := AutomaticMode
+);
+DO_MovingHorizontalCB_01 := MBS_CB_HorizontalMove.DigitalOutputControl_01;]]></ST>
+    </Implementation>
+    <Method Name="Abort" Id="{9833448f-6e04-4e99-9914-f9d7d9f2bba0}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Abort : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterAbort := callCounterAbort + 1;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckState" Id="{88199704-ccbe-4e0a-8a2c-9959755d53ed}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD CheckState : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR
+VAR_OUTPUT
+	bBusy : BOOL; // Do not change. Used by server to find out if the job is finished
+	
+	// List of OutputArguments for OPC UA method, may be customized
+	State : BOOL; // Abgeschlossener MethodCall
+	MethodCall: BOOL; //Input Recall
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterCheckState := callCounterCheckState + 1;
+IF NOT jobFinished THEN
+	bBusy := TRUE; // job is not finished yet
+	CheckState := 0; // no error
+ELSE
+	bBusy := FALSE; // job is finished
+	CheckState := 0; // done, no error occured during execution (OPC UA StatusCode "GOOD")
+	jobFinished := FALSE;
+	State := ResetMethodCall;
+	MethodCall := MethodCall_HorizontalMove;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Start" Id="{74656c2a-31eb-48b1-9035-144bb87f0889}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Start : HRESULT
+VAR_INPUT
+	// List of InputArguments for OPC UA method, may be customized
+	MethodCall : BOOL; // some description
+	DirectionPoint : STRING;	
+END_VAR
+VAR_OUTPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterStart := callCounterStart + 1;
+
+MethodCall_HorizontalMove := MethodCall;
+DirectionHorizontal := DirectionPoint;
+
+jobRunning := TRUE;
+Start := 0; // no error occured, e.g. while parsing the input arguments (0 = OPC UA StatusCode "GOOD")]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

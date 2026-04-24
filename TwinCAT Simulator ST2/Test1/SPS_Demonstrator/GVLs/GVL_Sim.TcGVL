@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <GVL Name="GVL_Sim" Id="{2b9e35f3-0ef9-4b44-a032-dab988ea25d9}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	bSimMode : BOOL ;   // FALSE = reale Hardware, TRUE = Python-Simulation
+
+    // Spiegel von GVL
+    diNotAus_Kanal_A : BOOL ;
+    diNotAus_Kanal_B : BOOL ;
+    
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

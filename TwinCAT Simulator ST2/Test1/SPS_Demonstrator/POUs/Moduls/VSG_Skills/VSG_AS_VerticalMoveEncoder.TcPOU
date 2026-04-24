@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="VSG_AS_VerticalMoveEncoder" Id="{c831783c-3794-4919-b093-802c7dd495cd}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'OPC.UA.DA.JobMethod' := 'JobMethode_VerticalMove'}
+FUNCTION_BLOCK VSG_AS_VerticalMoveEncoder
+VAR
+    MethodCall_VerticalMove : BOOL := FALSE;
+    ResetMethodCall : BOOL := FALSE;
+
+    DirectionVertical : BOOL := TRUE;
+
+    EncoderTargetPosition01 : UDINT;
+    EncoderTargetPosition02 : UDINT;
+
+    TSR : BOOL := FALSE;
+
+    callCounterStart : ULINT;
+    callCounterCheckState : ULINT;
+    callCounterAbort : ULINT;
+
+    jobRunning : BOOL := FALSE;
+    jobFinished : BOOL := FALSE;
+    state : UDINT := 0;
+
+    VSG_VerticalMoveWithEncoder : AxisControl_Encoder;
+END_VAR
+
+VAR_INPUT
+    ESS : BOOL;
+    TouchSensor01 : BOOL;
+    EncoderStartPosition01 : UDINT;
+    EncoderStartPosition02 : UDINT;
+    TOF_Time_TSR : TIME;
+    AutomaticMode : BOOL;
+END_VAR
+
+VAR_OUTPUT
+    DO_MovingVerticalVSG_01 : BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[VSG_VerticalMoveWithEncoder(
+    MethodCall := MethodCall_VerticalMove,
+    EmergencyStopSignal := NOT ESS,
+    Direction := DirectionVertical,
+    InitStateDrive_Input := FALSE,
+    DI01 := TouchSensor01,
+    DI02_EncoderStart01 := EncoderStartPosition01,
+    DI03_EncoderTarget01 := EncoderTargetPosition01,
+    DI04_EncoderStart02 := EncoderStartPosition02,
+    DI05_EncoderTarget02 := EncoderTargetPosition02,
+    TouchSensorRelief := TSR,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := TOF_Time_TSR,
+    OperatingMode := AutomaticMode
+);
+
+DO_MovingVerticalVSG_01 := VSG_VerticalMoveWithEncoder.DigitalOutputControl_01;
+ResetMethodCall := VSG_VerticalMoveWithEncoder.ResetMethodCall;
+
+IF ResetMethodCall THEN
+    MethodCall_VerticalMove := FALSE;
+    jobRunning := FALSE;
+    jobFinished := TRUE;
+    state := 100;
+END_IF;]]></ST>
+    </Implementation>
+    <Method Name="Abort" Id="{d2b68824-4b1c-44eb-bc5c-7c2447b3f5ec}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Abort : HRESULT
+VAR_INPUT
+    hdl : UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterAbort := callCounterAbort + 1;
+
+MethodCall_VerticalMove := FALSE;
+DO_MovingVerticalVSG_01 := FALSE;
+
+jobRunning := FALSE;
+jobFinished := TRUE;
+state := 999;
+
+Abort := 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckState" Id="{865483cf-745e-4db1-8af3-806f4e1643a5}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD CheckState : HRESULT
+VAR_INPUT
+    hdl : UDINT;
+END_VAR
+
+VAR_OUTPUT
+    bBusy : BOOL;
+    State : UDINT;
+    IsDone : BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterCheckState := callCounterCheckState + 1;
+
+bBusy := jobRunning;
+State := state;
+IsDone := jobFinished;
+
+CheckState := 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Start" Id="{105144fc-9a4c-40bd-b5d1-3ac4d100e37d}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Start : HRESULT
+VAR_INPUT
+    MethodCall : BOOL;
+    MovementDirection : BOOL;
+    EncoderPositionVertical_01 : UDINT;
+    EncoderPositionVertical_02 : UDINT;
+    TouchSensorRelief : BOOL;
+END_VAR
+
+VAR_OUTPUT
+    hdl : UDINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterStart := callCounterStart + 1;
+
+IF NOT jobRunning THEN
+
+    MethodCall_VerticalMove := MethodCall;
+    DirectionVertical := MovementDirection;
+
+    EncoderTargetPosition01 := EncoderPositionVertical_01;
+    EncoderTargetPosition02 := EncoderPositionVertical_02;
+
+    TSR := TouchSensorRelief;
+
+    jobRunning := TRUE;
+    jobFinished := FALSE;
+    state := 1;
+
+    hdl := 1;
+    Start := 0;
+
+ELSE
+
+    hdl := 0;
+    Start := 16#800700AA;
+
+END_IF;]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

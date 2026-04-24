@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="CompressorControl" Id="{261f0c4e-4f93-4447-87ec-ee5a6e287df9}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK CompressorControl
+VAR_INPUT
+    MethodCall : BOOL;
+    EmergencyStopSignal : BOOL;
+    Destination : BOOL;
+    InitStateDrive_Input : BOOL;
+
+    DI01 : BOOL;
+    DI02 : BOOL;
+
+    DI03_EncoderStart01 : UDINT;
+    DI04_EncoderStart02 : UDINT;
+    DI05_EncoderStart03 : UDINT;
+    DI06_EncoderStart04 : UDINT;
+    DI07_EncoderStart05 : UDINT;
+    DI08_EncoderStart06 : UDINT;
+
+    DI09_EncoderTarget01 : UDINT;
+    DI10_EncoderTarget02 : UDINT;
+    DI11_EncoderTarget03 : UDINT;
+    DI12_EncoderTarget04 : UDINT;
+    DI13_EncoderTarget05 : UDINT;
+    DI14_EncoderTarget06 : UDINT;
+
+    PowerOFF_SelfSet : BOOL;
+    TON_Time_PowerOFFSelfSet : TIME;
+    TON_Time_Compressor : TIME;
+    TON_Time_Valve : TIME;
+    OperatingMode : BOOL;
+END_VAR
+
+VAR_OUTPUT
+    DigitalOutputControl_01 : BOOL;
+    DigitalOutputControl_02 : BOOL;
+    ResetMethodCall : BOOL;
+END_VAR
+
+VAR
+    RS_Compressor : RS;
+    RS_Valve : RS;
+
+    TON_Compressor_Control : TON;
+    TON_Valve_Control : TON;
+    TON_SelfSet : TON;
+
+    R_TRIG_MethodCall : R_TRIG;
+
+    R_TRIG_EncoderPos01_CompressorInput : R_TRIG;
+    R_TRIG_EncoderPos02_CompressorInput : R_TRIG;
+    R_TRIG_EncoderPos03_CompressorInput : R_TRIG;
+    R_TRIG_EncoderPos04_CompressorInput : R_TRIG;
+    R_TRIG_EncoderPos05_CompressorInput : R_TRIG;
+    R_TRIG_EncoderPos06_CompressorInput : R_TRIG;
+
+    R_TRIG_EncoderPos01_CompressorOutput : R_TRIG;
+    R_TRIG_EncoderPos02_CompressorOutput : R_TRIG;
+    R_TRIG_EncoderPos03_CompressorOutput : R_TRIG;
+    R_TRIG_EncoderPos04_CompressorOutput : R_TRIG;
+    R_TRIG_EncoderPos05_CompressorOutput : R_TRIG;
+    R_TRIG_EncoderPos06_CompressorOutput : R_TRIG;
+
+    R_TRIG_EncoderPos01_ValveInput : R_TRIG;
+    R_TRIG_EncoderPos02_ValveInput : R_TRIG;
+    R_TRIG_EncoderPos03_ValveInput : R_TRIG;
+    R_TRIG_EncoderPos04_ValveInput : R_TRIG;
+    R_TRIG_EncoderPos05_ValveInput : R_TRIG;
+    R_TRIG_EncoderPos06_ValveInput : R_TRIG;
+
+    R_TRIG_EncoderPos01_ValveOutput : R_TRIG;
+    R_TRIG_EncoderPos02_ValveOutput : R_TRIG;
+    R_TRIG_EncoderPos03_ValveOutput : R_TRIG;
+    R_TRIG_EncoderPos04_ValveOutput : R_TRIG;
+    R_TRIG_EncoderPos05_ValveOutput : R_TRIG;
+    R_TRIG_EncoderPos06_ValveOutput : R_TRIG;
+
+    bEncoderInputCondition : BOOL;
+    bEncoderOutputCondition : BOOL;
+    bStartCondition : BOOL;
+    bResetCondition : BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[R_TRIG_MethodCall(CLK := MethodCall);
+
+R_TRIG_EncoderPos01_CompressorInput(CLK := DI03_EncoderStart01 <> DI09_EncoderTarget01);
+R_TRIG_EncoderPos02_CompressorInput(CLK := DI04_EncoderStart02 <> DI10_EncoderTarget02);
+R_TRIG_EncoderPos03_CompressorInput(CLK := DI05_EncoderStart03 <> DI11_EncoderTarget03);
+R_TRIG_EncoderPos04_CompressorInput(CLK := DI06_EncoderStart04 <> DI12_EncoderTarget04);
+R_TRIG_EncoderPos05_CompressorInput(CLK := DI07_EncoderStart05 <> DI13_EncoderTarget05);
+R_TRIG_EncoderPos06_CompressorInput(CLK := DI08_EncoderStart06 <> DI14_EncoderTarget06);
+
+R_TRIG_EncoderPos01_CompressorOutput(CLK := DI03_EncoderStart01 = DI09_EncoderTarget01);
+R_TRIG_EncoderPos02_CompressorOutput(CLK := DI04_EncoderStart02 = DI10_EncoderTarget02);
+R_TRIG_EncoderPos03_CompressorOutput(CLK := DI05_EncoderStart03 = DI11_EncoderTarget03);
+R_TRIG_EncoderPos04_CompressorOutput(CLK := DI06_EncoderStart04 = DI12_EncoderTarget04);
+R_TRIG_EncoderPos05_CompressorOutput(CLK := DI07_EncoderStart05 = DI13_EncoderTarget05);
+R_TRIG_EncoderPos06_CompressorOutput(CLK := DI08_EncoderStart06 = DI14_EncoderTarget06);
+
+R_TRIG_EncoderPos01_ValveInput(CLK := DI03_EncoderStart01 <> DI09_EncoderTarget01);
+R_TRIG_EncoderPos02_ValveInput(CLK := DI04_EncoderStart02 <> DI10_EncoderTarget02);
+R_TRIG_EncoderPos03_ValveInput(CLK := DI05_EncoderStart03 <> DI11_EncoderTarget03);
+R_TRIG_EncoderPos04_ValveInput(CLK := DI06_EncoderStart04 <> DI12_EncoderTarget04);
+R_TRIG_EncoderPos05_ValveInput(CLK := DI07_EncoderStart05 <> DI13_EncoderTarget05);
+R_TRIG_EncoderPos06_ValveInput(CLK := DI08_EncoderStart06 <> DI14_EncoderTarget06);
+
+R_TRIG_EncoderPos01_ValveOutput(CLK := DI03_EncoderStart01 = DI09_EncoderTarget01);
+R_TRIG_EncoderPos02_ValveOutput(CLK := DI04_EncoderStart02 = DI10_EncoderTarget02);
+R_TRIG_EncoderPos03_ValveOutput(CLK := DI05_EncoderStart03 = DI11_EncoderTarget03);
+R_TRIG_EncoderPos04_ValveOutput(CLK := DI06_EncoderStart04 = DI12_EncoderTarget04);
+R_TRIG_EncoderPos05_ValveOutput(CLK := DI07_EncoderStart05 = DI13_EncoderTarget05);
+R_TRIG_EncoderPos06_ValveOutput(CLK := DI08_EncoderStart06 = DI14_EncoderTarget06);
+
+bEncoderInputCondition :=
+    R_TRIG_EncoderPos01_CompressorInput.Q
+    AND R_TRIG_EncoderPos02_CompressorInput.Q
+    AND R_TRIG_EncoderPos03_CompressorInput.Q
+    AND R_TRIG_EncoderPos04_CompressorInput.Q
+    AND R_TRIG_EncoderPos05_CompressorInput.Q
+    AND R_TRIG_EncoderPos06_CompressorInput.Q;
+
+bEncoderOutputCondition :=
+    R_TRIG_EncoderPos01_CompressorOutput.Q
+    AND R_TRIG_EncoderPos02_CompressorOutput.Q
+    AND R_TRIG_EncoderPos03_CompressorOutput.Q
+    AND R_TRIG_EncoderPos04_CompressorOutput.Q
+    AND R_TRIG_EncoderPos05_CompressorOutput.Q
+    AND R_TRIG_EncoderPos06_CompressorOutput.Q;
+
+bStartCondition :=
+    (DI01 OR bEncoderInputCondition OR InitStateDrive_Input)
+    AND OperatingMode;
+
+bResetCondition :=
+    (Destination AND (DI02 OR bEncoderOutputCondition))
+    OR EmergencyStopSignal;
+
+ResetMethodCall := bResetCondition;
+
+RS_Compressor(
+    SET := R_TRIG_MethodCall.Q AND bStartCondition,
+    RESET1 := bResetCondition
+);
+
+TON_Compressor_Control(
+    IN := RS_Compressor.Q1,
+    PT := TON_Time_Compressor
+);
+
+DigitalOutputControl_01 := TON_Compressor_Control.Q;
+
+TON_SelfSet(
+    IN := R_TRIG_MethodCall.Q AND PowerOFF_SelfSet,
+    PT := TON_Time_PowerOFFSelfSet
+);
+
+RS_Valve(
+    SET := R_TRIG_MethodCall.Q AND (DI01 OR bEncoderInputCondition OR InitStateDrive_Input),
+    RESET1 := (Destination AND (DI02 OR bEncoderOutputCondition OR TON_SelfSet.Q)) OR EmergencyStopSignal
+);
+
+TON_Valve_Control(
+    IN := RS_Valve.Q1,
+    PT := TON_Time_Valve
+);
+
+DigitalOutputControl_02 := TON_Valve_Control.Q;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

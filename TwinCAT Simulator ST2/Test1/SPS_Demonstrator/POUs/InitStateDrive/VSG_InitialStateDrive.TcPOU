@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="VSG_InitialStateDrive" Id="{cb726295-7af5-46e7-863e-5b9eaadb0c49}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK VSG_InitialStateDrive
+VAR_INPUT
+    MethodCall_InitDrive : BOOL;
+    ESS : BOOL;
+    InputInitDriveMode : BOOL;
+
+    TouchSensor01_Rotation : BOOL;
+    TouchSensor02_Vertical : BOOL;
+    TouchSensor03_horizontal : BOOL;
+
+    TOF_Time_TSR : TIME;
+    InitDriveMode : BOOL;
+END_VAR
+
+VAR_OUTPUT
+    VSG_Init_RotateCW : BOOL;
+    VSG_Init_RotateCCW : BOOL;
+
+    VSG_Init_VerticalUp : BOOL;
+    VSG_Init_VerticalDown : BOOL;
+
+    VSG_Init_HorizontalForwards : BOOL;
+    VSG_Init_HorizontalBackwards : BOOL;
+
+    ResetMethodCall_RotateCW : BOOL;
+    ResetMethodCall_RGB_Vertical : BOOL;
+    ResetMethodCall_RGB_Horizontal : BOOL;
+END_VAR
+
+VAR
+    TSR : BOOL := TRUE;
+
+    DirectionVertical : BOOL := TRUE;
+    DirectionHorizontal : BOOL := TRUE;
+    DirectionRotation : BOOL := TRUE;
+
+    VSG_InitDrive_Rotate_CW : AxisControl_MultipleInputSensors;
+    VSG_InitDrive_Vertical_Up : AxisControl_MultipleInputSensors;
+    VSG_InitDrive_Horizontal_Backwards : AxisControl_MultipleInputSensors;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[VSG_InitDrive_Rotate_CW(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := NOT ESS,
+    Direction := DirectionRotation,
+    InitStateDrive_Input := InputInitDriveMode,
+    DI01 := FALSE,
+    DI02 := TouchSensor01_Rotation,
+    TouchSensorRelief := TSR,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := TOF_Time_TSR,
+    OperatingMode := InitDriveMode
+);
+
+VSG_Init_RotateCW := VSG_InitDrive_Rotate_CW.DigitalOutputControl_01;
+VSG_Init_RotateCCW := FALSE;
+ResetMethodCall_RotateCW := VSG_InitDrive_Rotate_CW.ResetMethodCall;
+
+
+VSG_InitDrive_Vertical_Up(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := NOT ESS,
+    Direction := DirectionVertical,
+    InitStateDrive_Input := InputInitDriveMode,
+    DI01 := FALSE,
+    DI02 := TouchSensor02_Vertical,
+    TouchSensorRelief := TSR,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := TOF_Time_TSR,
+    OperatingMode := InitDriveMode
+);
+
+VSG_Init_VerticalUp := VSG_InitDrive_Vertical_Up.DigitalOutputControl_01;
+VSG_Init_VerticalDown := FALSE;
+ResetMethodCall_RGB_Vertical := VSG_InitDrive_Vertical_Up.ResetMethodCall;
+
+
+VSG_InitDrive_Horizontal_Backwards(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := NOT ESS,
+    Direction := DirectionHorizontal,
+    InitStateDrive_Input := InputInitDriveMode,
+    DI01 := FALSE,
+    DI02 := TouchSensor03_horizontal,
+    TouchSensorRelief := TSR,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := TOF_Time_TSR,
+    OperatingMode := InitDriveMode
+);
+
+VSG_Init_HorizontalForwards := FALSE;
+VSG_Init_HorizontalBackwards := VSG_InitDrive_Horizontal_Backwards.DigitalOutputControl_01;
+ResetMethodCall_RGB_Horizontal := VSG_InitDrive_Horizontal_Backwards.ResetMethodCall;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="MBS_DmPD_AS_HorizontalMove" Id="{0a0e7656-c350-4d56-a226-d980aeb9ed60}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'OPC.UA.DA.JobMethod' := 'JobMethode_CompressorControl'}
+FUNCTION_BLOCK MBS_DmPD_AS_HorizontalMove
+VAR
+	AlwaysTrue : BOOL := TRUE;
+	// Used for debugging purposes to display InputArguments of method call
+	MethodCall_CompressorControl : BOOL := FALSE; // used to store InputArg "MethodCall" from Start() method
+	ResetMethodCall	: BOOL := FALSE;
+	DestinationVertical : STRING;
+	PowerOFF_SelfSet : BOOL;
+	PowerOFFDelay_SelfSet : TIME;
+	callCounterStart : ULINT; // counts how many times the Start() method has been called
+	callCounterCheckState : ULINT; // counts how many times the CheckState() method has been called
+	callCounterAbort : ULINT; // counts how many times the Abort() method has been called
+	
+	// Variables to determine if a job has been started (Start() method has been called) or finished
+	jobRunning : BOOL;
+	jobFinished : BOOL;
+
+	// State machine variable
+	state : UDINT;
+	
+	//Variablen des Transport FBs
+	MBS_DmPD_VerticalMove : CompressorControl;
+END_VAR
+	
+VAR_INPUT
+	ESS: BOOL;
+	TouchSensor_01 : BOOL;
+	TON_PowerOnDelay_Compressor : TIME;
+	TON_PowerOnDelay_Valve : TIME;
+	AutomaticMode: BOOL;
+END_VAR
+
+VAR_OUTPUT
+	DO_ControlCompressorDmPD_01 : BOOL;
+	DO_ControlValveDmPD_02 : BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[MBS_DmPD_VerticalMove(
+    MethodCall := MethodCall_CompressorControl,
+    EmergencyStopSignal := ESS,
+    Destination := DestinationVertical,
+    InitStateDrive_Input := ,
+    DI01 := TouchSensor_01,
+    DI02 := ,
+    DI03_EncoderStart01 := ,
+    DI04_EncoderStart02 := ,
+    DI05_EncoderStart03 := ,
+    DI06_EncoderStart04 := ,
+    DI07_EncoderStart05 := ,
+    DI08_EncoderStart06 := ,
+    DI09_EncoderTarget01 := ,
+    DI10_EncoderTarget02 := ,
+    DI11_EncoderTarget03 := ,
+    DI12_EncoderTarget04 := ,
+    DI13_EncoderTarget05 := ,
+    DI14_EncoderTarget06 := ,
+    PowerOFF_SelfSet := PowerOFF_SelfSet,
+    TON_Time_PowerOFFSelfSet := PowerOFFDelay_SelfSet,
+    TON_Time_Compressor := TON_PowerOnDelay_Compressor,
+    TON_Time_Valve := TON_PowerOnDelay_Valve,
+    OperatingMode := AutomaticMode
+);
+DO_ControlCompressorDmPD_01 := MBS_DmPD_VerticalMove.DigitalOutputControl_01;
+]]></ST>
+    </Implementation>
+    <Method Name="Abort" Id="{5ad095f9-175f-43b8-89aa-fa3851c1c584}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Abort : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterAbort := callCounterAbort + 1;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckState" Id="{3b545a8b-eede-45ad-82bd-19805a72d66c}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD CheckState : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR
+VAR_OUTPUT
+	bBusy : BOOL; // Do not change. Used by server to find out if the job is finished
+	
+	// List of OutputArguments for OPC UA method, may be customized
+	State : BOOL; // Abgeschlossener MethodCall
+	MethodCall: BOOL; //Input Recall
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterCheckState := callCounterCheckState + 1;
+IF NOT jobFinished THEN
+	bBusy := TRUE; // job is not finished yet
+	CheckState := 0; // no error
+ELSE
+	bBusy := FALSE; // job is finished
+	CheckState := 0; // done, no error occured during execution (OPC UA StatusCode "GOOD")
+	jobFinished := FALSE;
+	State := ResetMethodCall;
+	MethodCall := MethodCall_CompressorControl;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Start" Id="{8059750e-03c3-421a-9cb2-2bfeea7eed95}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Start : HRESULT
+VAR_INPUT
+	// List of InputArguments for OPC UA method, may be customized
+	MethodCall : BOOL; // some description
+	DestinationPoint : STRING;
+	SelfSetPowerOff : BOOL;
+	SelfSetPowerOffDelay : TIME;	
+END_VAR
+VAR_OUTPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterStart := callCounterStart + 1;
+
+MethodCall_CompressorControl := MethodCall;
+DestinationVertical := DestinationPoint;
+PowerOFF_SelfSet := SelfSetPowerOff;
+PowerOFFDelay_SelfSet := SelfSetPowerOffDelay;
+
+jobRunning := TRUE;
+Start := 0; // no error occured, e.g. while parsing the input arguments (0 = OPC UA StatusCode "GOOD")]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

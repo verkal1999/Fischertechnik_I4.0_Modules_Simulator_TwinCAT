@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="SST_CS_AS_ColorDetection" Id="{21b25fe4-2acf-4255-a986-3204fb8bf31e}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'OPC.UA.DA.JobMethod' := 'JobMethode_ColorDetection'}
+FUNCTION_BLOCK SST_CS_AS_ColorDetection
+VAR
+	AlwaysTrue : BOOL := TRUE;
+	// Used for debugging purposes to display InputArguments of method call
+	MethodCall_ColorDetection : BOOL := FALSE; // used to store InputArg "MethodCall" from Start() method
+	callCounterStart : ULINT; // counts how many times the Start() method has been called
+	callCounterCheckState : ULINT; // counts how many times the CheckState() method has been called
+	callCounterAbort : ULINT; // counts how many times the Abort() method has been called
+	
+	// Variables to determine if a job has been started (Start() method has been called) or finished
+	jobRunning : BOOL;
+	jobFinished : BOOL;
+
+	// State machine variable
+	state : UDINT;
+	
+	//Variablen des Transport FBs
+	ResetCall : BOOL := FALSE;	
+	SST_Auto_ColorDetection : AutomaticColorDetection_nichtfertig;
+	
+	//Farbcodes
+	ColorCode1 : INT ;
+	ColorCode2 : INT ;
+	ColorCode3 : INT ;
+END_VAR
+	
+VAR_INPUT
+	Color_Sensor : INT;
+END_VAR
+
+VAR_OUTPUT
+ Color_White : BOOL;
+ Color_Red : BOOL;
+ Color_Blue : BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[SST_Auto_ColorDetection(ColorSensor := Color_Sensor, ColorCode_1 := ColorCode1, ColorCode_2 := ColorCode2, ColorCode_3 := ColorCode3);
+Color_White := SST_Auto_ColorDetection.Color_1;]]></ST>
+    </Implementation>
+    <Method Name="Abort" Id="{c81fa53b-9d62-46e2-bc8b-2f8ddb8c834e}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Abort : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterAbort := callCounterAbort + 1;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckState" Id="{6001b390-d8ec-45be-94b9-5a9d8713611e}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD CheckState : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR
+VAR_OUTPUT
+	bBusy : BOOL; // Do not change. Used by server to find out if the job is finished
+	
+	// List of OutputArguments for OPC UA method, may be customized
+	State : BOOL; // Abgeschlossener MethodCall
+	MethodCall: BOOL; //Input Recall
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterCheckState := callCounterCheckState + 1;
+IF NOT jobFinished THEN
+	bBusy := TRUE; // job is not finished yet
+	CheckState := 0; // no error
+ELSE
+	bBusy := FALSE; // job is finished
+	CheckState := 0; // done, no error occured during execution (OPC UA StatusCode "GOOD")
+	jobFinished := FALSE;
+	State := ResetCall;
+	MethodCall := MethodCall_ColorDetection;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Start" Id="{1d8063f6-64fe-455b-b5ba-4432a40cec43}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Start : HRESULT
+VAR_INPUT
+	// List of InputArguments for OPC UA method, may be customized
+	MethodCall : BOOL; // some description
+	DirectionPointA : BOOL;
+	DirectionPointB : BOOL;
+	EndschalterEntlastung : BOOL;	
+END_VAR
+VAR_OUTPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterStart := callCounterStart + 1;
+
+MethodCall_ColorDetection := MethodCall;
+
+jobRunning := TRUE;
+Start := 0; // no error occured, e.g. while parsing the input arguments (0 = OPC UA StatusCode "GOOD")]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

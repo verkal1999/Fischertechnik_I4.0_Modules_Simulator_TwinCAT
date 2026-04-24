@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="HRL_ControlOfOutputs" Id="{9aafcd5a-1d9f-41e2-895d-731792a269f4}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK HRL_ControlOfOutputs
+VAR_INPUT
+	F4							: BOOL;
+	F1							: BOOL;
+	A2							: BOOL;
+	A6							: BOOL;
+	A1							: BOOL := FALSE;
+	Start						: BOOL;
+	CB_forwards 				: BOOL; 
+	CB_backwards 				: BOOL; 
+	RGB_Forwards01 				: BOOL;
+	RGB_Forwards02 				: BOOL;
+	RGB_Backwards01				: BOOL; 
+	RGB_Backwards02 			: BOOL; 
+	RGB_VertikalDown01			: BOOL; 
+	RGB_VertikalDown02			: BOOL; 
+	RGB_VertikalUp01			: BOOL;
+	RGB_VertikalUp02			: BOOL; 
+	RGB_HorizontalForwards01 	: BOOL; 
+	RGB_HorizontalForwards02	: BOOL;
+	RGB_HorizontalBackwards01 	: BOOL; 
+	RGB_HorizontalBackwards02 	: BOOL;
+	Init_RGB_Forwards			: BOOL;
+	Init_RGB_Backwards			: BOOL;
+	Init_RGB_VertikalUp			: BOOL;
+	Init_RGB_VertikalDown		: BOOL;
+	Init_RGB_HorizontalForwads 	: BOOL;
+	Init_RGB_HorizontalBackwards : BOOL;
+END_VAR
+VAR_OUTPUT
+	ConveyorBeltForward: BOOL;
+	ConveyorBeltBackward: BOOL;
+	RGB_Forwards: BOOL;
+	RGB_Backwards: BOOL;
+	RGB_VerticalDown: BOOL;
+	RGB_VerticalUp: BOOL;
+	RGB_HorizontalForward: BOOL;
+	RGB_HorizontalBackward: BOOL;
+	Light_Q1: BOOL;
+	Light_Q2: BOOL;
+	Light_Q3: BOOL;
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ ConveyorBeltForward := ((((((F1) OR (A2))) AND (CB_Forwards))) OR (((Start) AND (F4))));
+ConveyorBeltBackward := ((((((F1) OR (A2))) AND (CB_Backwards))) OR (((Start) AND (F4))));
+RGB_Forwards := ((((((F1) OR (A2))) AND (((RGB_Forwards01) OR (RGB_Forwards02))))) OR (((Start) AND (F4))) OR (((A6) AND (Init_RGB_Forwards))));
+RGB_Backwards := ((((((F1) OR (A2))) AND (((RGB_Backwards01) OR (RGB_Backwards02))))) OR (((Start) AND (F4))) OR (((A6) AND (Init_RGB_Backwards))));
+RGB_VerticalDown := ((((((F1) OR (A2))) AND (((RGB_VertikalDown01) OR (RGB_VertikalDown02))))) OR (((Start) AND (F4))) OR (((A6) AND (Init_RGB_VertikalDown))));
+RGB_VerticalUp := ((((((F1) OR (A2))) AND (((RGB_VertikalUp01) OR (RGB_VertikalUp02))))) OR (((Start) AND (F4))) OR (((A6) AND (Init_RGB_VertikalUp))));
+RGB_HorizontalForward := ((((((F1) OR (A2))) AND (((RGB_HorizontalForwards01) OR (RGB_HorizontalForwards02))))) OR (((Start) AND (F4))) OR (((A6) AND (Init_RGB_HorizontalForwads))));
+RGB_HorizontalBackward := ((((((F1) OR (A2))) AND (((RGB_HorizontalBackwards01) OR (RGB_HorizontalBackwards02))))) OR (((Start) AND (F4))) OR (((A6) AND (Init_RGB_HorizontalBackwards))));
+Light_Q1 := F1;
+Light_Q2 := F4;
+Light_Q3 := A1;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

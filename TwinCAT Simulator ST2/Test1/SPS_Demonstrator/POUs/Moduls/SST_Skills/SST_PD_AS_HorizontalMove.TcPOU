@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="SST_PD_AS_HorizontalMove" Id="{cb956c34-7dd4-4bd6-9cbd-c8c0e6a124cb}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'OPC.UA.DA.JobMethod' := 'JobMethode_CompressorControl'}
+FUNCTION_BLOCK SST_PD_AS_HorizontalMove
+VAR
+	AlwaysTrue : BOOL := TRUE;
+	// Used for debugging purposes to display InputArguments of method call
+	MethodCall_CompressorControl : BOOL := FALSE; // used to store InputArg "MethodCall" from Start() method
+	ResetMethodCall : BOOL := FALSE;
+	DestinationHorizontal : STRING;
+	callCounterStart : ULINT; // counts how many times the Start() method has been called
+	callCounterCheckState : ULINT; // counts how many times the CheckState() method has been called
+	callCounterAbort : ULINT; // counts how many times the Abort() method has been called
+	
+	// Variables to determine if a job has been started (Start() method has been called) or finished
+	jobRunning : BOOL;
+	jobFinished : BOOL;
+
+	// State machine variable
+	state : UDINT;
+	
+	//Variablen des Transport FBs
+	
+	MBS_VSG_HorizontalMove : CompressorControl;
+END_VAR
+	
+VAR_INPUT
+	ESS: BOOL;
+	LightSensor_01 : BOOL;
+	LightSensor_02 : BOOL;
+	PowerOnDelay_Compressor : TIME;
+	PowerOnDelay_Valve : TIME;
+	AutomaticMode : BOOL;
+END_VAR
+
+VAR_OUTPUT
+	DO_ControlCompressorPD_01 : BOOL;
+	DO_ControlValvePD_02 : BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[MBS_VSG_HorizontalMove(
+    MethodCall := MethodCall_CompressorControl,
+    EmergencyStopSignal := ESS,
+    Destination := DestinationHorizontal,
+    InitStateDrive_Input := ,
+    DI01 := LightSensor_01,
+    DI02 := LightSensor_02,
+    DI03_EncoderStart01 := ,
+    DI04_EncoderStart02 := ,
+    DI05_EncoderStart03 := ,
+    DI06_EncoderStart04 := ,
+    DI07_EncoderStart05 := ,
+    DI08_EncoderStart06 := ,
+    DI09_EncoderTarget01 := ,
+    DI10_EncoderTarget02 := ,
+    DI11_EncoderTarget03 := ,
+    DI12_EncoderTarget04 := ,
+    DI13_EncoderTarget05 := ,
+    DI14_EncoderTarget06 := ,
+    PowerOFF_SelfSet := ,
+    TON_Time_PowerOFFSelfSet := ,
+    TON_Time_Compressor := PowerOnDelay_Compressor,
+    TON_Time_Valve := PowerOnDelay_Valve,
+    OperatingMode := AutomaticMode
+);
+DO_ControlCompressorPD_01 := MBS_VSG_HorizontalMove.DigitalOutputControl_01;]]></ST>
+    </Implementation>
+    <Method Name="Abort" Id="{9e481ec4-5d3d-450c-b70b-90c303926e6c}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Abort : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterAbort := callCounterAbort + 1;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckState" Id="{d3aac3c2-f256-4d5b-a4a5-1959107155fe}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD CheckState : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR
+VAR_OUTPUT
+	bBusy : BOOL; // Do not change. Used by server to find out if the job is finished
+	
+	// List of OutputArguments for OPC UA method, may be customized
+	State : BOOL; // Abgeschlossener MethodCall
+	MethodCall: BOOL; //Input Recall
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterCheckState := callCounterCheckState + 1;
+IF NOT jobFinished THEN
+	bBusy := TRUE; // job is not finished yet
+	CheckState := 0; // no error
+ELSE
+	bBusy := FALSE; // job is finished
+	CheckState := 0; // done, no error occured during execution (OPC UA StatusCode "GOOD")
+	jobFinished := FALSE;
+	State := ResetMethodCall;
+	MethodCall := MethodCall_CompressorControl;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Start" Id="{3bad8b6c-815c-4a54-807d-9fb4edb55f66}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Start : HRESULT
+VAR_INPUT
+	// List of InputArguments for OPC UA method, may be customized
+	MethodCall : BOOL; // some description
+	DestinationPoint : STRING;	
+END_VAR
+VAR_OUTPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterStart := callCounterStart + 1;
+
+MethodCall_CompressorControl := MethodCall;
+DestinationHorizontal := DestinationPoint;
+
+jobRunning := TRUE;
+Start := 0; // no error occured, e.g. while parsing the input arguments (0 = OPC UA StatusCode "GOOD")]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

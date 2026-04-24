@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="AutomaticColorDetection_nichtfertig" Id="{eb188eee-d4b2-42d0-882f-8922330922a5}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK AutomaticColorDetection_nichtfertig
+VAR_INPUT
+	MethodCall : BOOL;
+	EmergencyStopSignal : BOOL;
+	ColorSensor: INT;
+	ColorCode_1: INT;
+	ColorCode_2: INT;
+	ColorCode_3: INT;
+	OperatingMode : BOOL;
+END_VAR
+
+VAR_OUTPUT
+	Color_1: BOOL;
+	Color_2: BOOL;
+	Color_3: BOOL;
+END_VAR
+
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Color_1 := ((ColorSensor) = (ColorCode_1));
+Color_2 := ((ColorSensor) = (ColorCode_2));
+Color_3 := ((ColorSensor) = (Color_3));]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,338 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="MBS_SkillSet" Id="{9e944362-7f0a-476a-8a02-aeb4f6b528ec}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MBS_SkillSet
+VAR
+//Multibearbeitungsstation Skills
+	//MBS Maschine1 (Ofen) Skills	
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_MR01_TransportIn: MBS_MR01_AS_HorizontalMoveSensors;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_MR01_SecuringWorkpiece: MBS_MR01_AS_SecuringProcess;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_MR01_HardeningProcess: MBS_MR01_AS_HardeningProcess;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_SkillMR01_ReleaseWorkpiece: MBS_MR01_AS_SecuringProcess;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_MR01_TransportOut: MBS_MR01_AS_HorizontalMoveSensors;
+	
+	//MBS Vakuumsauggreifer Skills
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_VGS_PickUpWorkpieceToDmPD: MBS_VSG_AS_SuctionProcess;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_VGS_PickUpWorkpieceToOven: MBS_VSG_AS_SuctionProcess;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_VSG_VerticalMove: MBS_VSG_AS_VerticalMove;	
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_VSG_TransportToDmPD: MBS_VSG_AS_HorizontalMove;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_VSG_TransportToMR01: MBS_VSG_AS_HorizontalMove;
+	
+	
+	//MBS Drehteller mit PushingDevice Skills
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_DmPD_RotateFromVSGtoMR02: MBS_DmPD_AS_RotationMove;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_DmPD_RotateFromVSGtoCB: MBS_DmPD_AS_RotationMove;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_DmPD_RotateFromMR02toCB: MBS_DmPD_AS_RotationMove;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_DmPD_RotateFromMR02toVSG: MBS_DmPD_AS_RotationMove;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_DmPD_RotateFromCBtoVSG: MBS_DmPD_AS_RotationMove;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_DmPD_RotateFromCBtoMR02: MBS_DmPD_AS_RotationMove;
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_DmPB_PushWorkpieceOff: MBS_DmPD_AS_HorizontalMove;
+	
+	//MBS Maschine2 (Schneidemaschine) Skills
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_MR02_CuttingProcess: MBS_MR02_AS_CuttingProcess;
+	
+	//MBS ConveyorBelt Skills
+	{attribute 'OPC.UA.DA':= '1'}
+	MBS_Skill_CB_Moving: MBS_CB_AS_HorizontalMove;
+	
+	//Organisation FBs
+	MBS_ControlOfOutputs : MBS_ControlOfOutputs;
+	MBS_OperatingModes : MBS_OperatingModes;
+	
+	//InitialStateDrives
+	MBS_MR01_InitialStateDrive : MBS_MR01_InitialStateDrive;
+	MBS_VSG_InitialStateDrive : MBS_VSG_InitialStateDrive;
+	MBS_DmPD_InitialStateDrive : MBS_DmPD_InitialStateDrive;
+	MBS_MR02_InitialStateDrive : MBS_MR02_InitialStateDrive;
+	
+//Variablen zur Outputsteuerung
+	//Output-Variablen der Komponente MR01 
+	MR01_MoveOvenslideIn 			: BOOL; //GVL_MBS.MBS_MOT_Ofenschieber_einfahren
+	MR01_MoveOvenslideOut			: BOOL; //GVL_MBS.MBS_MOT_Ofenschieber_ausfahren
+	MR01_Compressor_SecuringProcess : BOOL; //GVL_MBS.MBS_Kompressor
+	MR01_Valve_OvenDoor				: BOOL; //GVL_MBS.MBS_MV_Ofentuer
+	MR01_HardeningProcess			: BOOL; //GVL_MBS.MBS_Leuchte_Ofen
+	
+	//Output-Variablen der Komponente VSG
+	VSG_Compressor_VerticalMove			: BOOL; //GVL_MBS.MBS_Kompressor
+	VSG_Valve_VerticalMove				: BOOL; //GVL_MBS.MBS_MV_senken
+	VSG_Compressor_SuctionProcessToDmPD	: BOOL; //GVL_MBS.MBS_Kompressor
+	VSG_Valve_SuctionProcessToDmPD		: BOOL; //GVL_MBS.MBS_MV_Vakuum
+	VSG_Compressor_SuctionProcessToMR01	: BOOL; //GVL_MBS.MBS_Kompressor
+	VSG_Valve_SuctionProcessToMR01		: BOOL; //GVL_MBS.MBS_MV_Vakuum
+	VSG_MoveHorizontalForwards			: BOOL; //GVL_MBS.MBS_MOT_Sauger_zum_DK
+	VSG_MoveHorizontalBackwards			: BOOL; //GVL_MBS.MBS_MOT_Sauger_zum_Ofen
+		
+	//Output-Variablen der Komponente DmPD
+	DmPD_RotateCWformVSGtoMR02 		: BOOL; //GVL_MBS.MBS_MOT_DK_CW
+	DmPD_RotateCWromVSGtoCB			: BOOL; //GVL_MBS.MBS_MOT_DK_CW
+	DmPD_RotateCWfromMR02toCB		: BOOL; //GVL_MBS.MBS_MOT_DK_CW
+	DmPD_RotateCCWformCBtoMR02 		: BOOL; //GVL_MBS.MBS_MOT_DK_CCW
+	DmPD_RotateCCWformCBtoVSG 		: BOOL; //GVL_MBS.MBS_MOT_DK_CCW
+	DmPD_RotateCCWformMR02toVSG 	: BOOL; //GVL_MBS.MBS_MOT_DK_CCW
+	DmPD_Compressor_HorizontalMove 	: BOOL; //GVL_MBS.MBS_Kompressor
+	DmPD_Valve_HorizontalMove 		: BOOL; //GVL_MBS.ControlValveHorizontalMove
+	
+	//Output-Variablen der Komponente MR02
+	MR02_CuttingProcess : BOOL; //GVL_MBS.MBS_MOT_Saege
+	
+	//Output-Variablen der Komponente CB
+	CB_MoveForwards	: BOOL; //GVL_MBS.MBS_MOT_Foerderband_vorwaerts
+	
+//Output-Variablen für Init-Fahrt
+	Init_MR01_HorizontalForwards	: BOOL; //GVL_MBS.MBS_MOT_Ofenschieber_einfahren
+	Init_MR01_HorizontalBackwards	: BOOL; //GVL_MBS.MBS_MOT_Ofenschieber_ausfahren
+	Init_VSG_HorizontalForwards 	: BOOL; //GVL_MBS.MBS_MOT_Sauger_zum_DK
+	Init_VSG_HorizontalBackwards	: BOOL; //GVL_MBS.MBS_MOT_Sauger_zum_Ofen
+	Init_DmPD_RotateCW				: BOOL; //GVL_MBS.MBS_MOT_DK_CW
+	Init_DmPD_RotateCCW				: BOOL; //GVL_MBS.MBS_MOT_DK_CCW
+	Init_MR02_CuttingProcess		: BOOL; //GVL_MBS.MBS_MOT_Saege
+	
+//Variablensetzung: Sollte später über SkillOA eingesetzt werden ODER Hard in SPS codiert (Diskussionspunkt)
+	ResetButton: BOOL;
+	StartButton: BOOL;
+	ConfirmationButton: BOOL;
+
+//Time Constraints
+	TIME_TSR : TIME := T#150MS;
+	PowerOnDelay_Compressor : TIME := T#500MS;
+	PowerOnDelay_Valve_SuctionProcess : TIME := T#520MS;
+	PowerOnDelay_Valve_VerticalMove : TIME := T#120MS;
+	PowerOnDelay_Valve_HorizontalMove : TIME := T#120MS;
+	PowerOffDelay_ConveyorBelt : TIME := T#100MS;	
+//Encoder Values for InitialStateDrive
+	
+//Variable Values for InitialStateDrive
+	MethodCall_InitStateDrive	: BOOL;
+	InputVar_InitStateDrive		: BOOL;
+	InitTime_Cutting 			: TIME := T#200MS;
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[MBS_OperatingModes(
+    Start := StartButton,
+    Stop := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    Reset := ResetButton,
+    Schalter := ConfirmationButton,
+    Schrittkette_GS := (((MBS_MR01_InitialStateDrive.ResetMethodCallInitDriveMR01_Backwards) AND (MBS_MR01_InitialStateDrive.ResetMethodCallInitDriveMR01_Forwards) AND (MBS_VSG_InitialStateDrive.ResetMethodCallInitDriveVSG) AND (MBS_DmPD_InitialStateDrive.ResetMethodCallRotateCCW) AND (MBS_DmPD_InitialStateDrive.ResetMethodCallRotateCW) AND (MBS_MR02_InitialStateDrive.ResetMethodCallCuttingProcess)))
+);
+MBS_ControlOfOutputs(
+    F4 := MBS_OperatingModes.F4,
+    F1 := MBS_OperatingModes.F1,
+    A2 := MBS_OperatingModes.A2,
+    A1 := MBS_OperatingModes.A1,
+    A6 := MBS_OperatingModes.A6,
+    Start := MBS_OperatingModes.Start,
+    CB_Forwards := CB_MoveForwards,
+    DmPD_Compressor := DmPD_Compressor_HorizontalMove,
+    DmPD_Valve := DmPD_Valve_HorizontalMove,
+    DmPD_RotateCW_VSGtoMR02 := DmPD_RotateCWformVSGtoMR02,
+    DmPD_RotateCW_VSGtoCB := DmPD_RotateCWromVSGtoCB,
+    DmPD_RotateCW_MR02toCB := DmPD_RotateCWfromMR02toCB,
+    DmPD_RotateCCW_CBtoMR02 := DmPD_RotateCCWformCBtoMR02,
+    DmPD_RotateCCW_CBtoVSG := DmPD_RotateCCWformCBtoVSG,
+    DmPD_RotateCCW_MR02toVSG := DmPD_RotateCCWformMR02toVSG,
+    MR01_HardeningProcess := MR01_HardeningProcess,
+    MR01_HorizontalForwards := MR01_MoveOvenslideIn,
+    MR01_HoritzontalBackwards := MR01_MoveOvenslideOut,
+    MR01_Compressor := MR01_Compressor_SecuringProcess,
+    MR01_Valve := MR01_Valve_OvenDoor,
+    MR02_CuttingProcess := MR02_CuttingProcess,
+    VSG_HorizontalForwards := VSG_MoveHorizontalForwards,
+    VSG_HorizontalBackwards := VSG_MoveHorizontalBackwards,
+    VSG_Valve_VerticalDown := VSG_Valve_VerticalMove,
+    VSG_Valve_SuctionToDmPD := VSG_Valve_SuctionProcessToDmPD,
+    VSG_Valve_SuctionToMR01 := VSG_Valve_SuctionProcessToMR01,
+    VSG_Compressor_VerticalDown := VSG_Compressor_VerticalMove,
+    VSG_Compressor_SuctionToDmPD := VSG_Compressor_SuctionProcessToDmPD,
+    VSG_Compressor_SuctionToMR01 := VSG_Compressor_SuctionProcessToMR01,
+    Init_DmPD_RotateCCW := Init_DmPD_RotateCCW,
+    Init_DmPD_RotateCW := Init_DmPD_RotateCW,
+    Init_MR01_HorizontalForwards := Init_MR01_HorizontalForwards,
+    Init_MR01_HorizontalBackwards := Init_MR01_HorizontalBackwards,
+    Init_MR02_CuttingProcess := Init_MR02_CuttingProcess,
+    Init_VSG_HorizontalForwards := Init_VSG_HorizontalForwards,
+    Init_VSG_HorizontalBackwards := Init_VSG_HorizontalBackwards
+);
+GVL_MBS.MBS_MOT_Foerderband_vorwaerts := MBS_ControlOfOutputs.ConveyorBeltForward;
+MBS_MR01_InitialStateDrive(
+    MethodCall_InitDrive := MethodCall_InitStateDrive,
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    InputInitStateDrive := InputVar_InitStateDrive,
+    TouchSensor01 := GVL_MBS.MBS_Ref_Taster_Ofenschieber_innen,
+    TouchSensor02 := GVL_MBS.MBS_Ref_Taster_Ofenschieber_aussen,
+    InitDriveMode := MBS_OperatingModes.A6
+);
+Init_MR01_HorizontalForwards := MBS_MR01_InitialStateDrive.MotorControlHorizontalForwards;
+MBS_VSG_InitialStateDrive(
+    MethodCall_InitDrive := MethodCall_InitStateDrive,
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    InputInitStateDrive := InputVar_InitStateDrive,
+    TouchSensor01 := GVL_MBS.MBS_Ref_Taster_Sauger_Pos_DK,
+    TOF_Time_TSR := TIME_TSR,
+    InitDriveMode := MBS_OperatingModes.A6
+);
+Init_VSG_HorizontalForwards := MBS_VSG_InitialStateDrive.DO_HorizontalMoveInitDriveVSG_01;
+MBS_DmPD_InitialStateDrive(
+    MethodCall_InitDrive := MethodCall_InitStateDrive,
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    InputInitialStateDrive := InputVar_InitStateDrive,
+    DI02_CW := GVL_MBS.MBS_Ref_Taster_DK_Pos_Foerderband,
+    DI01_CCW := GVL_MBS.MBS_Ref_Taster_DK_Pos_Foerderband,
+    DI02_CCW := GVL_MBS.MBS_Ref_Taster_DK_Pos_Sauger,
+    InitDriveMode := MBS_OperatingModes.A6
+);
+Init_DmPD_RotateCW := MBS_DmPD_InitialStateDrive.MotorControl_CW;
+MBS_MR02_InitialStateDrive(
+    MethodCall_InitDrive := MethodCall_InitStateDrive,
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    InputInitialStateDrive := InputVar_InitStateDrive,
+    TOF_Time_InitCuttingTime := InitTime_Cutting,
+    InitDriveMode := MBS_OperatingModes.A6
+);
+Init_MR02_CuttingProcess := MBS_MR02_InitialStateDrive.CheckMR02MotorControl;
+MBS_Skill_MR01_TransportIn(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_Ofenschieber_aussen,
+    TouchSensor_02 := GVL_MBS.MBS_Ref_Taster_Ofenschieber_innen,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+MR01_MoveOvenslideIn := MBS_Skill_MR01_TransportIn.DO_MovingHorizontalMR01_01;
+MBS_Skill_MR01_TransportOut(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_Ofenschieber_innen,
+    TouchSensor_02 := GVL_MBS.MBS_Ref_Taster_Ofenschieber_aussen,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+MR01_MoveOvenslideOut := MBS_Skill_MR01_TransportOut.DO_MovingHorizontalMR01_01;
+MBS_Skill_MR01_SecuringWorkpiece(ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)), TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_Ofenschieber_innen, AutomaticMode := MBS_OperatingModes.F1);
+MR01_Compressor_SecuringProcess := MBS_Skill_MR01_SecuringWorkpiece.DO_SecuringProcessCompressorMR01_01;
+MBS_Skill_MR01_HardeningProcess(ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)), LightSensor_01 := GVL_MBS.MBS_Ref_Taster_Ofenschieber_innen, AutomaticMode := MBS_OperatingModes.F1);
+MR01_HardeningProcess := MBS_Skill_MR01_HardeningProcess.DO_HardeningProcessControlMR01;
+MBS_Skill_VSG_VerticalMove(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_Sauger_Pos_DK,
+    TON_PowerOnDelay_Compressor := PowerOnDelay_Compressor,
+    TON_PowerOnDelay_Valve := PowerOnDelay_Valve_VerticalMove,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+VSG_Compressor_VerticalMove := MBS_Skill_VSG_VerticalMove.DO_ControlCompressorVerticalMoveVSG_01;
+MBS_Skill_VGS_PickUpWorkpieceToDmPD(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_Sauger_Pos_Ofen,
+    TouchSensor_02 := GVL_MBS.MBS_Ref_Taster_Sauger_Pos_DK,
+    TON_PowerOnDelay_Compressor := PowerOnDelay_Compressor,
+    TON_PowerOnDelay_Valve := PowerOnDelay_Valve_SuctionProcess,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+VSG_Compressor_SuctionProcessToDmPD := MBS_Skill_VGS_PickUpWorkpieceToDmPD.DO_ControlCompressorSuctionProcessVSG_01;
+MBS_Skill_VGS_PickUpWorkpieceToOven(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_Sauger_Pos_DK,
+    TouchSensor_02 := GVL_MBS.MBS_Ref_Taster_Sauger_Pos_Ofen,
+    TON_PowerOnDelay_Compressor := PowerOnDelay_Compressor,
+    TON_PowerOnDelay_Valve := PowerOnDelay_Valve_SuctionProcess,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+VSG_Compressor_SuctionProcessToMR01 := MBS_Skill_VGS_PickUpWorkpieceToOven.DO_ControlCompressorSuctionProcessVSG_01;
+MBS_Skill_VSG_TransportToDmPD(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_Sauger_Pos_Ofen,
+    TouchSensor_02 := GVL_MBS.MBS_Ref_Taster_Sauger_Pos_DK,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticeMode := MBS_OperatingModes.F1
+);
+VSG_MoveHorizontalForwards := MBS_Skill_VSG_TransportToDmPD.DO_HorizontalMoveVSG_01;
+MBS_Skill_VSG_TransportToMR01(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_Sauger_Pos_DK,
+    TouchSensor_02 := GVL_MBS.MBS_Ref_Taster_Sauger_Pos_Ofen,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticeMode := MBS_OperatingModes.F1
+);
+VSG_MoveHorizontalBackwards := MBS_Skill_VSG_TransportToMR01.DO_HorizontalMoveVSG_01;
+MBS_Skill_DmPD_RotateFromVSGtoMR02(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Sauger,
+    TouchSensor_02 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Saege,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+DmPD_RotateCWformVSGtoMR02 := MBS_Skill_DmPD_RotateFromVSGtoMR02.DO_MovingRotationPmPD_01;
+MBS_Skill_DmPD_RotateFromVSGtoCB(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Sauger,
+    TouchSensor_02 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Foerderband,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+DmPD_RotateCWromVSGtoCB := MBS_Skill_DmPD_RotateFromVSGtoCB.DO_MovingRotationPmPD_01;
+MBS_Skill_DmPD_RotateFromMR02toCB(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Saege,
+    TouchSensor_02 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Foerderband,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+DmPD_RotateCWfromMR02toCB := MBS_Skill_DmPD_RotateFromMR02toCB.DO_MovingRotationPmPD_01;
+MBS_Skill_DmPD_RotateFromCBtoMR02(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Foerderband,
+    TouchSensor_02 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Saege,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+DmPD_RotateCCWformCBtoMR02 := MBS_Skill_DmPD_RotateFromCBtoMR02.DO_MovingRotationPmPD_01;
+MBS_Skill_DmPD_RotateFromCBtoVSG(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Foerderband,
+    TouchSensor_02 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Sauger,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+DmPD_RotateCCWformCBtoVSG := MBS_Skill_DmPD_RotateFromCBtoVSG.DO_MovingRotationPmPD_01;
+MBS_Skill_DmPD_RotateFromMR02toVSG(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Saege,
+    TouchSensor_02 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Sauger,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+DmPD_RotateCCWformMR02toVSG := MBS_Skill_DmPD_RotateFromMR02toVSG.DO_MovingRotationPmPD_01;
+MBS_Skill_DmPB_PushWorkpieceOff(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Foerderband,
+    TON_PowerOnDelay_Compressor := PowerOnDelay_Compressor,
+    TON_PowerOnDelay_Valve := PowerOnDelay_Valve_HorizontalMove,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+DmPD_Compressor_HorizontalMove := MBS_Skill_DmPB_PushWorkpieceOff.DO_ControlCompressorDmPD_01;
+MBS_Skill_MR02_CuttingProcess(ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)), TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Saege, AutomaticMode := MBS_OperatingModes.F1);
+MR02_CuttingProcess := MBS_Skill_MR02_CuttingProcess.DO_CuttingProcessControlMR02;
+MBS_Skill_CB_Moving(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor_01 := GVL_MBS.MBS_Ref_Taster_DK_Pos_Foerderband,
+    LightSensor_01 := GVL_MBS.MBS_LS_Ende_Foerderband,
+    TOF_Time_MotorControl := PowerOffDelay_ConveyorBelt,
+    AutomaticMode := MBS_OperatingModes.F1
+);
+CB_MoveForwards := MBS_Skill_CB_Moving.DO_MovingHorizontalCB_01;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

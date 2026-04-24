@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="AxisControl_MultipleInputSensors" Id="{4f1b1c65-f651-41ba-96c8-4125024edab7}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK AxisControl_MultipleInputSensors
+VAR_INPUT//Input-Variablen des FBs
+	MethodCall					: BOOL; // Variable zum aktiven Aufruf einer OPC UA Methode
+	EmergencyStopSignal 		: BOOL; // Variable für Not-Signal 
+	Direction 					: BOOL; // Variable zur Bestimmung der Bewegungsrichtung
+	InitStateDrive_Input		: BOOL; //InputVariable für Initialfahrt
+	DI01 						: BOOL; // Digitaler Input wie bspw. Lichtsensor oder Kontaktsensor 
+	DI02 						: BOOL; // Digitaler Input wie bspw. Lichtsensor oder Kontaktsensor 
+	TouchSensorRelief			: BOOL; // Hilfsvariable zur Identifikation ob eine Endschalterentlastung notwendig ist
+	TOF_Time_MotorControl		: TIME; // Zeitvariable für die Ausschaltverzögerung des digitalen Outputs (Motoransteuerung) 
+	TOF_Time_TouchSensorRelief	: TIME; // Ausschaltverzögerung für die Endschaltentlastung
+	OperatingMode				: BOOL; // Variable zur Festlegung des benötigten Betriebszustandes für die Auslösung des FBs
+END_VAR
+
+VAR_OUTPUT //Output-Variablen des FBs
+	DigitalOutputControl_01	: BOOL; //Digitale Output Ansteuerung des Motor 1
+	DigitalOutputControl_02	: BOOL; //Digitale Output Ansteuerung des Motor 2
+	ResetMethodCall			: BOOL; //Outputvariable für den Reset der OPC UA Methode
+	InitStateDriveFinished	: BOOL;
+	Count1 : INT := 0;
+	Count2 : INT := 0;
+END_VAR
+
+VAR //Interne-Variablen des FBs
+//FlipFlop
+	RS_AxisControl		: RS; //FlipFlop für die Ansteuerung der Achse oder des Transportbandes
+	RS_TouchSensorRelief: RS; //FlipFlop zu Ansteuerung der Endschalterentlastung
+//Zeitverzögerung
+	TOF_TouchSensorRelief	: TOF; //Ausschaltverzögerung für die Endschalterentlastung
+	TOF_DigitalOutputControl: TOF; //Ausschaltverzögerung für die Outputansteuerung	
+//Flanke	
+	R_TRIG_MethodCall : R_TRIG; //Flankenerkennung für eingehenden MethodenCall
+	R_TRIG_TSR : R_TRIG; //Flankenerkennung für eingehenden MethodenCall
+	F_TRIG_0: F_TRIG;
+	F_TRIG_1: F_TRIG;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[R_TRIG_MethodCall(CLK := MethodCall);
+ResetMethodCall := ((((Direction) AND (DI02))) OR (EmergencyStopSignal));
+RS_AxisControl(
+    SET := ((R_TRIG_MethodCall.Q) AND (((((Direction) AND (((DI01) OR (TouchSensorRelief))))) OR (((Direction) AND (InitStateDrive_Input))))) AND (OperatingMode)),
+    RESET1 := ((((Direction) AND (DI02))) OR (EmergencyStopSignal))
+);
+TOF_DigitalOutputControl(IN := RS_AxisControl.Q1, PT := TOF_Time_MotorControl);
+DigitalOutputControl_01 := TOF_DigitalOutputControl.Q;
+R_TRIG_TSR(CLK := ((ResetMethodCall) AND (DI02) AND (MethodCall) AND (TouchSensorRelief)));
+InitStateDriveFinished := ((NOT (DI02)) OR (EmergencyStopSignal));
+RS_TouchSensorRelief(SET := R_TRIG_TSR.Q, RESET1 := ((NOT (DI02)) OR (EmergencyStopSignal)));
+TOF_TouchSensorRelief(IN := RS_TouchSensorRelief.Q1, PT := TOF_Time_TouchSensorRelief);
+DigitalOutputControl_02 := TOF_TouchSensorRelief.Q;
+F_TRIG_0(CLK := DigitalOutputControl_01);
+F_TRIG_1(CLK := DigitalOutputControl_02);
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

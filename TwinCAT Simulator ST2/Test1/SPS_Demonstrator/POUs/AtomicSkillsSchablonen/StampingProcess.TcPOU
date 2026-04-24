@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="StampingProcess" Id="{589b117f-6db0-42ca-9f8a-c079d0ca83e8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK StampingProcess
+VAR_INPUT//Input-Variablen des FBs
+	MethodCall				: BOOL; // Variable zum aktiven Aufruf einer OPC UA Methode
+	EmergencyStopSignal 	: BOOL; // Variable für Not-Signal
+	InitStateDrive_Input	: BOOL; //InputVariable für Initialfahrt
+	DI01					: BOOL; // Digitaler Input wie bspw. Lichtsensor oder Kontaktsensor
+	TOF_Time_StampingTime	: TIME; // Ausschaltverzögerung für die Rücksetzbedingung um eine Bearbeitungszeit zu simulieren
+	OperatingMode			: BOOL; // Variable zur Festlegung des benötigten Betriebszustandes für die Auslösung des FBs
+END_VAR
+
+VAR_OUTPUT //Output-Variablen des FBs
+	DigitalOutputControl_01	: BOOL; //Digitale Output Ansteuerung des Motor 1
+	ResetMethodCall			: BOOL; //Outputvariable für den Reset der OPC UA Methode
+END_VAR
+
+VAR //Interne-Variablen des FBs
+//FlipFlop
+	RS_StampingProcess: RS; //FlipFlop für die Ansteuerung der Stanzmaschine
+//Zeitverzögerung
+	TOF_StampingTime: TOF; //Ausschaltverzögerung simulativ für die Bearbeitungszeit
+//Flanke	
+	R_TRIG_MethodCall: R_TRIG; //Flankenerkennung für eingehenden MethodenCall
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+R_TRIG_MethodCall(CLK := MethodCall);
+R_TRIG_MethodCall(CLK := MethodCall);
+TOF_StampingTime(IN := R_TRIG_MethodCall.Q, PT := TOF_Time_StampingTime);
+ResetMethodCall := ((TOF_StampingTime.Q) AND (EmergencyStopSignal));
+RS_StampingProcess(SET := ((R_TRIG_MethodCall.Q) AND (((DI01) OR (InitStateDrive_Input))) AND (OperatingMode)), RESET1 := ((TOF_StampingTime.Q) AND (EmergencyStopSignal)));
+DigitalOutputControl_01 := RS_StampingProcess.Q1;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

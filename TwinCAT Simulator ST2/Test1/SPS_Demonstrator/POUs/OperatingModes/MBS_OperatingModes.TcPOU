@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="MBS_OperatingModes" Id="{482384c4-76ef-4672-8759-723335b48fc6}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK MBS_OperatingModes
+VAR_INPUT
+	Start 			: BOOL;
+	Stop			: BOOL;
+	Reset			: BOOL;
+	Schalter		: BOOL;
+	Schrittkette_GS : BOOL;
+END_VAR
+VAR_OUTPUT
+	A1 : BOOL; //Initialzustand
+	A2 : BOOL; //Stillstand angefordert am Ende des Zyklus
+//	A3 : BOOL; //Stillstand angefordert in einem bestimmten Zustand
+//	A4 : BOOL; //Erhaltener Stillstand
+//	A5 : BOOL; //Vorbereitung zur Wiederaufnahme nach Störung
+	A6 : BOOL; //Fahrt in den Initialzustand
+	F1 : BOOL; //Normalbetrieb
+//	F2 : BOOL; //Anfahren
+//	F3 : BOOL; //Abfahren
+	F4 : BOOL; //Handbetrieb
+//	F5 : BOOL; //Schrittbetrieb
+//	F6 : BOOL; //Testbetrieb
+//	D1 : BOOL; //Not-Aus
+//	D2 : BOOL; //DIagnose und Störbehandlung
+//	D3 : BOOL; //Produktion trotz Störung
+END_VAR
+VAR
+	bFirstScan : BOOL := TRUE;	
+	
+	RS_InitialState: RS;	
+	RS_InitialDrive: RS;
+	RS_ManualOperationMode: RS;
+	RS_AutomaticOperationMode: RS;
+	RS_CycleEnded: RS;
+
+	R_TRIG_Manual: R_TRIG;
+	R_TRIG_Automatic: R_TRIG;
+	R_TRIG_InitialDrive: R_TRIG;
+	R_TRIG_CycleEnded: R_TRIG;
+	R_TRIG_Init: R_TRIG;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[R_TRIG_InitialDrive(CLK := RS_InitialDrive);
+R_TRIG_CycleEnded(CLK := RS_CycleEnded);
+R_TRIG_Manual(CLK := RS_ManualOperationMode);
+R_TRIG_Automatic(CLK := RS_AutomaticOperationMode);
+RS_InitialState(SET := ((((R_TRIG_InitialDrive.Q) AND (Schrittkette_GS))) OR (((R_TRIG_CycleEnded.Q) AND (Schrittkette_GS)))), RESET1 := ((R_TRIG_Manual.Q) OR (R_TRIG_Automatic.Q)));
+A1 := RS_InitialState.Q1;
+RS_ManualOperationMode(SET := ((Schalter) AND (A1) AND (Reset)), RESET1 := A6);
+F4 := RS_ManualOperationMode.Q1;
+R_TRIG_Manual(CLK := RS_ManualOperationMode);
+R_TRIG_Init(CLK := RS_InitialState);
+RS_InitialDrive(SET := ((((R_TRIG_Manual.Q) AND (((Stop) OR (NOT (Schalter)))))) OR ((bFirstScan))), RESET1 := R_TRIG_Init.Q);
+A6 := RS_InitialDrive.Q1;
+R_TRIG_Init(CLK := RS_InitialState);
+R_TRIG_CycleEnded(CLK := RS_CycleEnded);
+RS_AutomaticOperationMode(SET := ((Start) AND (R_TRIG_Init.Q) AND (NOT (Schalter))), RESET1 := R_TRIG_CycleEnded.Q);
+F1 := RS_AutomaticOperationMode.Q1;
+R_TRIG_Automatic(CLK := RS_AutomaticOperationMode);
+R_TRIG_Init(CLK := RS_InitialState);
+RS_CycleEnded(SET := ((R_TRIG_Automatic.Q) AND (((Schalter) OR (Stop)))), RESET1 := R_TRIG_Init.Q);
+A2 := RS_CycleEnded.Q1;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

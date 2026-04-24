@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="MBS_MR02_InitialStateDrive" Id="{b3352be0-6712-4ff5-a498-c09e8e6da717}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK MBS_MR02_InitialStateDrive
+VAR_INPUT
+	MethodCall_InitDrive : BOOL;
+	ESS : BOOL;
+	InputInitialStateDrive : BOOL;
+	TOF_Time_InitCuttingTime : TIME;
+	InitDriveMode : BOOL;
+END_VAR
+VAR_OUTPUT
+	CheckMR02MotorControl : BOOL;
+	ResetMethodCallCuttingProcess : BOOL;
+END_VAR
+VAR
+	MBS_MR02_InitDrive_CuttingProcess: CuttingProcess;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[MBS_MR02_InitDrive_CuttingProcess(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := ESS,
+    InitStateDrive_Input := InputInitialStateDrive,
+    DI01 := ,
+    TOF_Time_CuttingTime := TOF_Time_InitCuttingTime,
+    OperatingMode := InitDriveMode
+);
+CheckMR02MotorControl := MBS_MR02_InitDrive_CuttingProcess.DigitalOutputControl_01;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

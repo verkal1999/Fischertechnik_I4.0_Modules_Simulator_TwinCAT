@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="HRL_RGB_AS_VerticalMoveEncoders" Id="{c32e9a3c-89b9-4f4d-a30e-151c32e0ef1d}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'OPC.UA.DA.JobMethod' := 'JobMethode_VerticalMove'}
+FUNCTION_BLOCK HRL_RGB_AS_VerticalMoveEncoders
+VAR
+	AlwaysTrue : BOOL := TRUE;
+	// Used for debugging purposes to display InputArguments of method call
+	MethodCall_VerticalMove : BOOL := FALSE; // used to store InputArg "MethodCall" from Start() method
+	ResetMethodCall	: BOOL := FALSE;
+	DirectionVertical : BOOL;
+	EncoderTargetPosition01 : UDINT;
+	EncoderTargetPosition02 : UDINT;
+	TSR : BOOL;
+	callCounterStart : ULINT; // counts how many times the Start() method has been called
+	callCounterCheckState : ULINT; // counts how many times the CheckState() method has been called
+	callCounterAbort : ULINT; // counts how many times the Abort() method has been called
+	
+	// Variables to determine if a job has been started (Start() method has been called) or finished
+	jobRunning : BOOL;
+	jobFinished : BOOL;
+
+	// State machine variable
+	state : UDINT;
+	
+	// FB Intatziation Variable
+	HRL_RGB_VerticalMoveWithEncoder : AxisControl_Encoder;
+END_VAR
+	
+VAR_INPUT
+	ESS: BOOL;
+	TouchSensor01 : BOOL;
+	EncoderStartPosition01 : UDINT;
+	EncoderStartPosition02 : UDINT;
+	TOF_TSR_TIME : TIME;
+	AutomaticMode: BOOL;
+END_VAR
+
+VAR_OUTPUT
+	DO_MovingVerticalRGB_01 : BOOL;
+	DO_MovingVerticalRGB_02 : BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[HRL_RGB_VerticalMoveWithEncoder(
+    MethodCall := MethodCall_VerticalMove,
+    EmergencyStopSignal := ESS,
+    Direction := DirectionVertical,
+    InitStateDrive_Input := FALSE,
+    DI01 := TouchSensor01,
+    DI02_EncoderStart01 := EncoderStartPosition01,
+    DI03_EncoderTarget01 := EncoderTargetPosition01,
+    DI04_EncoderStart02 := EncoderStartPosition02,
+    DI05_EncoderTarget02 := EncoderTargetPosition02,
+    TouchSensorRelief := TSR,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := TOF_TSR_TIME,
+    OperatingMode := AutomaticMode
+);
+DO_MovingVerticalRGB_01 := HRL_RGB_VerticalMoveWithEncoder.DigitalOutputControl_01;
+]]></ST>
+    </Implementation>
+    <Method Name="Abort" Id="{c45be785-225e-439d-980c-5da232ecdb5f}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Abort : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterAbort := callCounterAbort + 1;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckState" Id="{0571114b-75cc-452c-8884-5724a288addf}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD CheckState : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR
+VAR_OUTPUT
+	bBusy : BOOL; // Do not change. Used by server to find out if the job is finished
+	
+	// List of OutputArguments for OPC UA method, may be customized
+	State : BOOL; // Abgeschlossener MethodCall
+	MethodCall: BOOL; //Input Recall
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterCheckState := callCounterCheckState + 1;
+IF NOT jobFinished THEN
+	bBusy := TRUE; // job is not finished yet
+	CheckState := 0; // no error
+ELSE
+	bBusy := FALSE; // job is finished
+	CheckState := 0; // done, no error occured during execution (OPC UA StatusCode "GOOD")
+	jobFinished := FALSE;
+	State := ResetMethodCall;
+	MethodCall := MethodCall_VerticalMove;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Start" Id="{0015a273-93fc-486d-a594-05e0b668e539}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Start : HRESULT
+VAR_INPUT
+	// List of InputArguments for OPC UA method, may be customized
+	MethodCall : BOOL; // some description
+	MovementDirection : BOOL;
+	EncoderPositionVertical_01 : UDINT;
+	EncoderPositionVertical_02 : UDINT;
+	TouchSensorRelief : BOOL;
+END_VAR
+VAR_OUTPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterStart := callCounterStart + 1;
+
+MethodCall_VerticalMove := MethodCall;
+DirectionVertical := MovementDirection;
+EncoderTargetPosition01 := EncoderPositionVertical_01;
+EncoderTargetPosition02 := EncoderPositionVertical_02;
+TSR := TouchSensorRelief;
+
+jobRunning := TRUE;
+Start := 0; // no error occured, e.g. while parsing the input arguments (0 = OPC UA StatusCode "GOOD")]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

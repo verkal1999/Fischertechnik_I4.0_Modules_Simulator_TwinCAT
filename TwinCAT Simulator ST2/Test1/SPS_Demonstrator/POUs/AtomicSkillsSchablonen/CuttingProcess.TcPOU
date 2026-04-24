@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="CuttingProcess" Id="{cd2893f4-f068-4cc5-8ead-d2feefd9e01b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK CuttingProcess
+VAR_INPUT//Input-Variablen des FBs
+	MethodCall			: BOOL; // Variable zum aktiven Aufruf einer OPC UA Methode
+	EmergencyStopSignal : BOOL; // Variable für Not-Signal
+	InitStateDrive_Input: BOOL; //InputVariable für Initialfahrt
+	DI01				: BOOL; // Digitaler Input wie bspw. Lichtsensor oder Kontaktsensor
+	TOF_Time_CuttingTime: TIME; // Ausschaltverzögerung für die Rücksetzbedingung um eine Bearbeitungszeit zu simulieren
+	OperatingMode		: BOOL; // Variable zur Festlegung des benötigten Betriebszustandes für die Auslösung des FBs
+END_VAR
+
+VAR_OUTPUT //Output-Variablen des FBs
+	DigitalOutputControl_01	: BOOL; //Digitale Output Ansteuerung des Motor 1
+	ResetMethodCall			: BOOL; //Outputvariable für den Reset der OPC UA Methode
+END_VAR
+
+VAR //Interne-Variablen des FBs
+//FlipFlop
+	RS_CuttingProcess: RS; //FlipFlop für die Ansteuerung der Schneidemaschine
+//Zeitverzögerung
+	TOF_CuttingTime: TOF; //Ausschaltverzögerung simulativ für die Bearbeitungszeit
+//Flanke	
+	R_TRIG_MethodCall: R_TRIG; //Flankenerkennung für eingehenden MethodenCall
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[R_TRIG_MethodCall(CLK := MethodCall);
+R_TRIG_MethodCall(CLK := MethodCall);
+TOF_CuttingTime(IN := R_TRIG_MethodCall.Q, PT := TOF_Time_CuttingTime);
+ResetMethodCall := ((TOF_CuttingTime.Q) OR (EmergencyStopSignal));
+RS_CuttingProcess(SET := ((R_TRIG_MethodCall.Q) AND (((DI01) OR (InitStateDrive_Input))) AND (OperatingMode)), RESET1 := ((TOF_CuttingTime.Q) OR (EmergencyStopSignal)));
+DigitalOutputControl_01 := RS_CuttingProcess.Q1;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

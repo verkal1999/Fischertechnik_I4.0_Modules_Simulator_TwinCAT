@@ -1,0 +1,332 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="VSG_SkillSet" Id="{8743bf4b-d312-4b1a-9b20-374aad0c587b}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM VSG_SkillSet
+VAR
+    {attribute 'OPC.UA.DA':= '1'}
+    VSG_ErrorDetected : BOOL := FALSE;
+
+    {attribute 'OPC.UA.DA':= '1'}
+    VSG_ErrorCode : UDINT := 0;
+
+    {attribute 'OPC.UA.DA':= '1'}
+    VSG_Skill_HorizontalMoveForwards : VSG_AS_HorizontalMoveEncoder;
+
+    {attribute 'OPC.UA.DA':= '1'}
+    VSG_Skill_HorizontalMoveBackwards : VSG_AS_HorizontalMoveEncoder;
+
+    {attribute 'OPC.UA.DA':= '1'}
+    VSG_Skill_VerticalMoveForwards : VSG_AS_VerticalMoveEncoder;
+
+    {attribute 'OPC.UA.DA':= '1'}
+    VSG_Skill_VerticalMoveBackwards : VSG_AS_VerticalMoveEncoder;
+
+    {attribute 'OPC.UA.DA':= '1'}
+    VSG_Skill_RotationMoveCW : VSG_AS_RotationMoveEncoder;
+
+    {attribute 'OPC.UA.DA':= '1'}
+    VSG_Skill_RotationMoveCCW : VSG_AS_RotationMoveEncoder;
+
+    {attribute 'OPC.UA.DA':= '1'}
+    VSG_Skill_SuctionProcess : VSG_AS_CompressorControl;
+
+    VSG_ControlOfOutputs : VSG_ControlOfOutputs;
+    VSG_OperatingModes : VSG_OperatingModes;
+    VSG_DiagnosisHandler : VSG_DiagnosisHandler;
+    VSG_InitialStateDrive : VSG_InitialStateDrive;
+    bSuctionTrackingLatched : BOOL := FALSE;
+
+    VSG_MoveHorizontalForwards01 : BOOL;
+    VSG_MoveHorizontalForwards02 : BOOL;
+    VSG_MoveHorizontalBackwards01 : BOOL;
+    VSG_MoveHorizontalBackwards02 : BOOL;
+
+    VSG_MoveVerticalDown01 : BOOL;
+    VSG_MoveVerticalDown02 : BOOL;
+    VSG_MoveVerticalUp01 : BOOL;
+    VSG_MoveVerticalUp02 : BOOL;
+
+    VSG_MoveRotationCW01 : BOOL;
+    VSG_MoveRotationCW02 : BOOL;
+    VSG_MoveRotationCCW01 : BOOL;
+    VSG_MoveRotationCCW02 : BOOL;
+
+    VSG_Compressor : BOOL;
+    VSG_Valve : BOOL;
+
+    Init_VSG_VertikalUp : BOOL;
+    Init_VSG_VertikalDown : BOOL;
+    Init_VSG_HorizontalForwards : BOOL;
+    Init_VSG_HorizontalBackwards : BOOL;
+    Init_VSG_RotationCW : BOOL;
+    Init_VSG_RotationCCW : BOOL;
+
+    ResetButton : BOOL;
+    StartButton : BOOL;
+    ConfirmationButton : BOOL;
+
+    TIME_TSR : TIME := T#150MS;
+
+    MethodCall_InitStateDrive : BOOL;
+    InputVar_InitStateDrive : BOOL;
+	sCurrentGemmaState: STRING(80);
+	sLastNonFailureGemmaState : STRING(80) := '';
+    rtD2 : R_TRIG;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF GVL_Sim.bSimMode THEN
+
+    GVL.diNotAus_Kanal_A := GVL_Sim.diNotAus_Kanal_A;
+    GVL.diNotAus_Kanal_B := GVL_Sim.diNotAus_Kanal_B;
+
+    GVL_VSG.VSG_Enc_vertikal_I1 := GVL_VSG_Sim.VSG_Enc_vertikal_I1;
+    GVL_VSG.VSG_Enc_vertikal_I2 := GVL_VSG_Sim.VSG_Enc_vertikal_I2;
+
+    GVL_VSG.VSG_Enc_horizontal_I1 := GVL_VSG_Sim.VSG_Enc_horizontal_I1;
+    GVL_VSG.VSG_Enc_horizontal_I2 := GVL_VSG_Sim.VSG_Enc_horizontal_I2;
+
+    GVL_VSG.VSG_Enc_drehen_I1 := GVL_VSG_Sim.VSG_Enc_drehen_I1;
+    GVL_VSG.VSG_Enc_drehen_I2 := GVL_VSG_Sim.VSG_Enc_drehen_I2;
+
+    GVL_VSG.VSG_Ref_Schalter_vertikal := GVL_VSG_Sim.VSG_Ref_Schalter_vertikal;
+    GVL_VSG.VSG_Ref_Schalter_horizontal := GVL_VSG_Sim.VSG_Ref_Schalter_horizontal;
+    GVL_VSG.VSG_Ref_Schalter_drehen := GVL_VSG_Sim.VSG_Ref_Schalter_drehen;
+
+END_IF;
+
+
+VSG_OperatingModes(
+    Start := StartButton,
+    Stop := NOT ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    Reset := ResetButton,
+    Schalter := ConfirmationButton,
+
+    Schrittkette_GS :=
+        VSG_InitialStateDrive.ResetMethodCall_RGB_Horizontal
+        AND VSG_InitialStateDrive.ResetMethodCall_RGB_Vertical
+        AND VSG_InitialStateDrive.ResetMethodCall_RotateCW,
+
+    Count1 := 0,
+    Count2 := 0,
+
+    Alt_abort := OPCUA.Alt_abort,
+    Err_detected := VSG_DiagnosisHandler.Err_detected,
+    Diag_finished := VSG_DiagnosisHandler.Diag_finished,
+    Alt_found := VSG_DiagnosisHandler.Alt_found,
+    Cycle_finished := OPCUA.Cycle_finished
+);
+
+
+VSG_InitialStateDrive(
+    MethodCall_InitDrive := MethodCall_InitStateDrive,
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    InputInitDriveMode := InputVar_InitStateDrive,
+    TouchSensor01_Rotation := GVL_VSG.VSG_Ref_Schalter_drehen,
+    TouchSensor02_Vertical := GVL_VSG.VSG_Ref_Schalter_vertikal,
+    TouchSensor03_horizontal := GVL_VSG.VSG_Ref_Schalter_horizontal,
+    TOF_Time_TSR := TIME_TSR,
+    InitDriveMode := VSG_OperatingModes.A6
+);
+
+Init_VSG_RotationCW := VSG_InitialStateDrive.VSG_Init_RotateCW;
+Init_VSG_VertikalUp := VSG_InitialStateDrive.VSG_Init_VerticalUp;
+Init_VSG_HorizontalBackwards := VSG_InitialStateDrive.VSG_Init_HorizontalBackwards;
+
+
+VSG_Skill_HorizontalMoveForwards(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor01 := GVL_VSG.VSG_Ref_Schalter_horizontal,
+    EncoderStartPosition01 := GVL_VSG.VSG_Enc_horizontal_I1,
+    EncoderStartPosition02 := GVL_VSG.VSG_Enc_horizontal_I2,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticMode := VSG_OperatingModes.A6
+);
+
+VSG_MoveHorizontalForwards01 := VSG_Skill_HorizontalMoveForwards.DO_MovingHorizontalVSG_01;
+
+
+VSG_Skill_HorizontalMoveBackwards(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor01 := GVL_VSG.VSG_Ref_Schalter_horizontal,
+    EncoderStartPosition01 := GVL_VSG.VSG_Enc_horizontal_I1,
+    EncoderStartPosition02 := GVL_VSG.VSG_Enc_horizontal_I2,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticMode := VSG_OperatingModes.A6
+);
+
+VSG_MoveHorizontalBackwards02 := VSG_Skill_HorizontalMoveBackwards.DO_MovingHorizontalVSG_01;
+
+
+VSG_Skill_VerticalMoveForwards(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor01 := GVL_VSG.VSG_Ref_Schalter_vertikal,
+    EncoderStartPosition01 := GVL_VSG.VSG_Enc_vertikal_I1,
+    EncoderStartPosition02 := GVL_VSG.VSG_Enc_vertikal_I2,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticMode := VSG_OperatingModes.A6
+);
+
+VSG_MoveVerticalDown01 := VSG_Skill_VerticalMoveForwards.DO_MovingVerticalVSG_01;
+
+
+VSG_Skill_VerticalMoveBackwards(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor01 := GVL_VSG.VSG_Ref_Schalter_vertikal,
+    EncoderStartPosition01 := GVL_VSG.VSG_Enc_vertikal_I1,
+    EncoderStartPosition02 := GVL_VSG.VSG_Enc_vertikal_I2,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticMode := VSG_OperatingModes.A6
+);
+
+VSG_MoveVerticalUp02 := VSG_Skill_VerticalMoveBackwards.DO_MovingVerticalVSG_01;
+
+
+VSG_Skill_RotationMoveCW(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor01 := GVL_VSG.VSG_Ref_Schalter_drehen,
+    EncoderStartPosition01 := GVL_VSG.VSG_Enc_drehen_I1,
+    EncoderStartPosition02 := GVL_VSG.VSG_Enc_drehen_I2,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticMode := VSG_OperatingModes.A6
+);
+
+VSG_MoveRotationCW01 := VSG_Skill_RotationMoveCW.DO_MovingRotationVSG_01;
+
+
+VSG_Skill_RotationMoveCCW(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor01 := GVL_VSG.VSG_Ref_Schalter_drehen,
+    EncoderStartPosition01 := GVL_VSG.VSG_Enc_drehen_I1,
+    EncoderStartPosition02 := GVL_VSG.VSG_Enc_drehen_I2,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticMode := VSG_OperatingModes.A6
+);
+
+VSG_MoveRotationCCW02 := VSG_Skill_RotationMoveCCW.DO_MovingRotationVSG_01;
+
+
+VSG_Skill_SuctionProcess(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+
+    EncoderStartPosition01 := GVL_VSG.VSG_Enc_drehen_I1,
+    EncoderStartPosition02 := GVL_VSG.VSG_Enc_drehen_I2,
+    EncoderStartPosition03 := GVL_VSG.VSG_Enc_horizontal_I1,
+    EncoderStartPosition04 := GVL_VSG.VSG_Enc_horizontal_I2,
+    EncoderStartPosition05 := GVL_VSG.VSG_Enc_vertikal_I1,
+    EncoderStartPosition06 := GVL_VSG.VSG_Enc_vertikal_I2,
+
+    WorkpieceAtPickupPosition := GVL_HRL.HRL_LS_aussen,
+
+    AutomaticMode := VSG_OperatingModes.F1 AND NOT VSG_OperatingModes.D2
+);
+
+VSG_Compressor := VSG_Skill_SuctionProcess.DO_CompressorVSG;
+VSG_Valve := VSG_Skill_SuctionProcess.DO_ValveVSG;
+
+VSG_ErrorDetected := VSG_Skill_SuctionProcess.VSG_ErrorDetected;
+VSG_ErrorCode := VSG_Skill_SuctionProcess.VSG_ErrorCode;
+
+
+VSG_DiagnosisHandler(
+    Diagnose_gefordert := VSG_OperatingModes.D2,
+    ErrorDetectedRaw := VSG_Skill_SuctionProcess.VSG_ErrorDetected,
+    Reset := ResetButton
+);
+
+
+VSG_ControlOfOutputs(
+    F4 := VSG_OperatingModes.F4,
+    F1 := VSG_OperatingModes.F1,
+    A2 := VSG_OperatingModes.A2,
+    A1 := VSG_OperatingModes.A1,
+    A6 := VSG_OperatingModes.A6,
+    Start := VSG_OperatingModes.Start,
+
+    VSG_VertikalDown01 := VSG_MoveVerticalDown01,
+    VSG_VertikalDown02 := VSG_MoveVerticalDown02,
+    VSG_VertikalUp01 := VSG_MoveVerticalUp01,
+    VSG_VertikalUp02 := VSG_MoveVerticalUp02,
+
+    VSG_HorizontalForwards01 := VSG_MoveHorizontalForwards01,
+    VSG_HorizontalForwards02 := VSG_MoveHorizontalForwards02,
+    VSG_HorizontalBackwards01 := VSG_MoveHorizontalBackwards01,
+    VSG_HorizontalBackwards02 := VSG_MoveHorizontalBackwards02,
+
+    VSG_RotationCW01 := VSG_MoveRotationCW01,
+    VSG_RotationCW02 := VSG_MoveRotationCW02,
+    VSG_RotationCCW01 := VSG_MoveRotationCCW01,
+    VSG_RotationCCW02 := VSG_MoveRotationCCW02,
+
+    VSG_Compressor := VSG_Compressor,
+    VSG_Valve := VSG_Valve,
+
+    Init_VSG_VertikalUp := Init_VSG_VertikalUp,
+    Init_VSG_VertikalDown := Init_VSG_VertikalDown,
+    Init_VSG_HorizontalForwards := Init_VSG_HorizontalForwards,
+    Init_VSG_HorizontalBackwards := Init_VSG_HorizontalBackwards,
+    Init_VSG_RotationCW := Init_VSG_RotationCW,
+    Init_VSG_RotationCCW := Init_VSG_RotationCCW
+);
+
+
+IF GVL_Sim.bSimMode THEN
+
+    GVL_VSG_Sim.VSG_MOT_vertikal_runter := VSG_ControlOfOutputs.MoveVerticalDown;
+    GVL_VSG_Sim.VSG_MOT_vertikal_hoch := VSG_ControlOfOutputs.MoveVerticalUp;
+
+    GVL_VSG_Sim.VSG_MOT_horizontal_vorwaerts := VSG_ControlOfOutputs.MoveHorizontalForwards;
+    GVL_VSG_Sim.VSG_MOT_horizontal_rueckwaerts := VSG_ControlOfOutputs.MoveHorizontalBackwards;
+
+    GVL_VSG_Sim.VSG_MOT_drehen_CW := VSG_ControlOfOutputs.MoveRotationCW;
+    GVL_VSG_Sim.VSG_MOT_drehen_CCW := VSG_ControlOfOutputs.MoveRotationCCW;
+
+    GVL_VSG_Sim.VSG_Kompressor := VSG_ControlOfOutputs.CompressorON;
+    GVL_VSG_Sim.VSG_MV_Vakuum := VSG_ControlOfOutputs.ValveON;
+
+ELSE
+
+    GVL_VSG.VSG_MOT_vertikal_runter := VSG_ControlOfOutputs.MoveVerticalDown;
+    GVL_VSG.VSG_MOT_vertikal_hoch := VSG_ControlOfOutputs.MoveVerticalUp;
+
+    GVL_VSG.VSG_MOT_horizontal_vorwaerts := VSG_ControlOfOutputs.MoveHorizontalForwards;
+    GVL_VSG.VSG_MOT_horizontal_rueckwaerts := VSG_ControlOfOutputs.MoveHorizontalBackwards;
+
+    GVL_VSG.VSG_MOT_drehen_CW := VSG_ControlOfOutputs.MoveRotationCW;
+    GVL_VSG.VSG_MOT_drehen_CCW := VSG_ControlOfOutputs.MoveRotationCCW;
+
+    GVL_VSG.VSG_Kompressor := VSG_ControlOfOutputs.CompressorON;
+    GVL_VSG.VSG_MV_Vakuum := VSG_ControlOfOutputs.ValveON;
+
+END_IF;
+
+//GEMMA_Mappings
+IF VSG_OperatingModes.A1 THEN
+    sCurrentGemmaState := 'VSG_OperatingModes.A1';
+ELSIF VSG_OperatingModes.A2 THEN
+    sCurrentGemmaState := 'VSG_OperatingModes.A2';
+ELSIF VSG_OperatingModes.A5 THEN
+    sCurrentGemmaState := 'VSG_OperatingModes.A5';
+ELSIF VSG_OperatingModes.A6 THEN
+    sCurrentGemmaState := 'VSG_OperatingModes.A6';
+ELSIF VSG_OperatingModes.F1 THEN
+    sCurrentGemmaState := 'VSG_OperatingModes.F1';
+ELSIF VSG_OperatingModes.F4 THEN
+    sCurrentGemmaState := 'VSG_OperatingModes.F4';
+ELSIF VSG_OperatingModes.D1 THEN
+    sCurrentGemmaState := 'VSG_OperatingModes.D1';
+ELSIF VSG_OperatingModes.D3 THEN
+    sCurrentGemmaState := 'VSG_OperatingModes.D3';
+END_IF;
+
+IF NOT VSG_OperatingModes.D2 THEN
+    sLastNonFailureGemmaState := sCurrentGemmaState;
+END_IF;
+
+rtD2(CLK := VSG_OperatingModes.D2);
+
+IF rtD2.Q THEN
+    OPCUA.LastGEMMAStateBeforeFailure := sLastNonFailureGemmaState;
+END_IF;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="JobMethode_Schablone" Id="{b381e1eb-e56b-489c-8857-4737dafe5168}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'OPC.UA.DA.JobMethod' := 'JobMethode_Schablone'}
+FUNCTION_BLOCK JobMethode_Schablone
+VAR
+	AlwaysTrue : BOOL := TRUE;
+	// Used for debugging purposes to display InputArguments of method call
+	MethodCall_Name : BOOL := FALSE; // used to store InputArg "MethodCall" from Start() method
+	Direction_01 : BOOL := FALSE;
+	Direction_02 : BOOL := FALSE;
+	TS_EndschalterEntlastung : BOOL;
+	callCounterStart : ULINT; // counts how many times the Start() method has been called
+	callCounterCheckState : ULINT; // counts how many times the CheckState() method has been called
+	callCounterAbort : ULINT; // counts how many times the Abort() method has been called
+	
+	// Variables to determine if a job has been started (Start() method has been called) or finished
+	jobRunning : BOOL;
+	jobFinished : BOOL;
+
+	// State machine variable
+	state : UDINT;
+	
+	//Variablen des Transport FBs
+	ResetCall : BOOL := FALSE;	
+	JobMethode_Name : AxisControl_MultipleInputSensors;
+END_VAR
+	
+VAR_INPUT
+	NotAusSignal: BOOL;
+	LightSensor_01 : BOOL;
+	LightSensor_02 : BOOL;
+	TS_Endschalter_01 : BOOL;
+	TS_Endschalter_02 : BOOL;
+	TOF_Time_Motoransteuerung : TIME;
+	TOF_Time_EndschalterEntlastung : TIME;
+END_VAR
+
+VAR_OUTPUT
+	Motor_Ansteuerung01 : BOOL;
+	Motor_Ansteuerung02 : BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[JobMethode_Name(
+    MethodCall := MethodCall_Name,
+    NotAus_Signal := NotAusSignal,
+    Direction_01 := Direction_01,
+    Direction_02 := Direction_02,
+    LightSensor_01 := LightSensor_01,
+    LightSensor_02 := LightSensor_02,
+    TS_Endschalter_01 := TS_Endschalter_01,
+    AutomaticMode := _REFACTOR_,
+    TS_Endschalter_02 := TS_Endschalter_02,
+    TS_EndschalterEntlastung := TS_EndschalterEntlastung,
+    TOF_Time_Motoransteuerung := TOF_Time_Motoransteuerung,
+    TOF_Time_EndschalterEntlastung := TOF_Time_EndschalterEntlastung
+);
+Motor_Ansteuerung01 := JobMethode_Name.Motor_Direction01;
+]]></ST>
+    </Implementation>
+    <Method Name="Abort" Id="{5fcdc08e-6df6-4911-a59e-54e017523f37}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Abort : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterAbort := callCounterAbort + 1;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckState" Id="{cd2a9436-660d-4e15-b533-713ca3f67bc5}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD CheckState : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR
+VAR_OUTPUT
+	bBusy : BOOL; // Do not change. Used by server to find out if the job is finished
+	
+	// List of OutputArguments for OPC UA method, may be customized
+	State : BOOL; // Abgeschlossener MethodCall
+	MethodCall: BOOL; //Input Recall
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterCheckState := callCounterCheckState + 1;
+IF NOT jobFinished THEN
+	bBusy := TRUE; // job is not finished yet
+	CheckState := 0; // no error
+ELSE
+	bBusy := FALSE; // job is finished
+	CheckState := 0; // done, no error occured during execution (OPC UA StatusCode "GOOD")
+	jobFinished := FALSE;
+	State := ResetCall;
+	MethodCall := MethodCall_Name;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Start" Id="{37e5724f-35b1-4915-9253-2a42b4bc69c2}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Start : HRESULT
+VAR_INPUT
+	// List of InputArguments for OPC UA method, may be customized
+	MethodCall : BOOL; // some description
+	DirectionPointA : BOOL;
+	DirectionPointB : BOOL;
+	EndschalterEntlastung : BOOL;	
+END_VAR
+VAR_OUTPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterStart := callCounterStart + 1;
+
+MethodCall_Name := MethodCall;
+DirectionPointA := Direction_01;
+DirectionPointB := Direction_02;
+EndschalterEntlastung := EndschalterEntlastung;
+
+IF DirectionPointA := TRUE THEN
+	DirectionPointB := FALSE;
+END_IF
+
+IF DirectionPointB := TRUE THEN
+	DirectionPointA := FALSE;
+END_IF
+
+jobRunning := TRUE;
+Start := 0; // no error occured, e.g. while parsing the input arguments (0 = OPC UA StatusCode "GOOD")]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

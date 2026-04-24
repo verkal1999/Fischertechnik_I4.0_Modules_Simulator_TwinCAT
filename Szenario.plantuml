@@ -1,0 +1,80 @@
+@startuml
+title Sequenzdiagramm – Ablauf Anwendungsbeispiel 2 (Realbetrieb)
+
+scale max 1000 width
+hide footbox
+autonumber
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam dpi 150
+skinparam maxMessageSize 300
+skinparam participantPadding 12
+skinparam BoxPadding 10
+skinparam sequence {
+    ArrowThickness 1
+    LifeLineBorderColor #6b7280
+    LifeLineBackgroundColor #f8fafc
+    ParticipantBorderColor #1f2937
+    ParticipantBackgroundColor #e5eef9
+    ParticipantFontColor #111827
+    ActorBorderColor #1f2937
+    ActorBackgroundColor #fff7ed
+    GroupBorderColor #9ca3af
+    GroupBackgroundColor #f9fafb
+}
+
+actor "Nutzer\n(Mensch)" as User
+participant "SkillOA-\nSimulator" as Sim
+participant "MSRGuard\nmit ExcH-Agent" as Guard
+
+box "Beckhoff CX5140 / TwinCAT 3" #fef3c7
+participant "OPC-UA-\nServer" as Ua
+participant "SPS-Steuerung\n(PLC Runtime)" as Plc
+end box
+
+participant "Feldgeräte" as Field
+
+note over Ua,Plc
+TwinCAT 3 auf Beckhoff CX5140:
+- OPC-UA-Server exponiert HRL-Skills als Methoden
+- Skill-Aufruf wird über ADS an PLC-Runtime 851 weitergeleitet
+end note
+
+note over Plc,Field
+Feldkommunikation über TwinCAT I/O / EtherCAT.
+Feldgeräte: HRL-Modul (Encoder, Referenztaster,
+Motoren, Lichtschranken HRL_LS_innen/_aussen).
+end note
+
+Sim -> Ua : OPC-UA-Methode aufrufen()
+activate Ua
+Ua -> Plc : Methodenaufruf\nan PLC /\nADS-851
+activate Plc
+Plc -> Field : Befehl an\nI/O / Feldbus
+activate Field
+Field --> Plc : Rückmeldung /\nMesswerte /\nStatus
+deactivate Field
+
+alt Ausführung erfolgreich
+    Plc --> Ua : Ergebnis /\nStatus OK
+    deactivate Plc
+    Ua --> Sim : Method Response / Status OK
+else Fehlerfall
+    Plc --> Ua : Fehlerstatus
+    deactivate Plc
+    Ua --> Sim : Fehler gemeldet
+    Sim -> Sim : Zustandswechsel\n nach D2\n"unbekannter Fehler"
+    Sim -> Guard : Fehlerkontext\nDiagnose-\nanfrage
+    activate Guard
+    Guard --> User : Handlungshinweise\nzur Fehlerbehebung
+    User -> Field : Fehler vor Ort beheben
+    Field --> User : Anlage wieder betriebsbereit
+    User --> Guard : Fehler behoben melden
+    Guard --> Sim : Neuer Stand\n übernommen\nund zurückgemeldet
+    deactivate Guard
+end
+
+deactivate Ua
+
+@enduml

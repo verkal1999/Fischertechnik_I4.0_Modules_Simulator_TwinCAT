@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="HRL_DiagnosisHandler" Id="{ff7eba9f-6df4-46ce-8268-1370b15c8037}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK HRL_DiagnosisHandler
+VAR_INPUT
+    Diagnose_gefordert : BOOL;
+    ErrorDetectedRaw   : BOOL;
+    Reset              : BOOL;
+    PulseTime          : TIME := T#100MS;
+END_VAR
+VAR_OUTPUT
+    Err_detected  : BOOL := FALSE;
+    Diag_finished : BOOL := FALSE;
+    Alt_found     : BOOL := FALSE;
+    Busy          : BOOL := FALSE;
+END_VAR
+VAR
+    rtReq      : R_TRIG;
+    rtError    : R_TRIG;
+    rtDiagAck  : R_TRIG;
+    rtAltFound : R_TRIG;
+    tpPulse    : TP;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[rtReq(CLK := Diagnose_gefordert);
+rtError(CLK := ErrorDetectedRaw);
+rtDiagAck(CLK := OPCUA.Diag_finished);
+rtAltFound(CLK := OPCUA.Alt_found);
+
+IF Reset THEN
+    Err_detected := FALSE;
+    Diag_finished := FALSE;
+    Alt_found := FALSE;
+    Busy := FALSE;
+    OPCUA.TriggerD2 := FALSE;
+END_IF
+
+IF rtError.Q THEN
+    Err_detected := TRUE;
+    Diag_finished := FALSE;
+    Alt_found := FALSE;
+END_IF
+
+tpPulse(
+    IN := rtReq.Q AND Err_detected AND NOT Busy,
+    PT := PulseTime
+);
+
+IF rtReq.Q AND Err_detected AND NOT Busy THEN
+    Busy := TRUE;
+END_IF
+
+IF tpPulse.Q THEN
+    OPCUA.TriggerD2 := TRUE;
+ELSIF OPCUA.TriggerD2 AND Diag_finished THEN
+    OPCUA.TriggerD2 := FALSE;
+END_IF
+
+IF Busy AND rtDiagAck.Q THEN
+    Diag_finished := TRUE;
+    Alt_found := FALSE;
+    Busy := FALSE;
+    OPCUA.Diag_finished := FALSE;
+    OPCUA.TriggerD2 := FALSE;
+END_IF
+
+IF Busy AND rtAltFound.Q THEN
+    Alt_found := TRUE;
+    Diag_finished := TRUE;
+    Busy := FALSE;
+    OPCUA.Alt_found := FALSE;
+    OPCUA.TriggerD2 := FALSE;
+END_IF
+
+IF NOT Diagnose_gefordert AND (Diag_finished OR Alt_found) THEN
+    Err_detected := FALSE;
+    Diag_finished := FALSE;
+    Alt_found := FALSE;
+END_IF
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="MBS_ControlOfOutputs" Id="{0795ae61-4c66-4094-b0fa-7e8efdff06a0}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK MBS_ControlOfOutputs
+VAR_INPUT
+	F4							: BOOL;
+	F1							: BOOL;
+	A2							: BOOL;
+	A1							: BOOL;
+	A6							: BOOL;
+	Start						: BOOL;
+// Output Control
+	CB_Forwards 				: BOOL; 
+	DmPD_Compressor				: BOOL;
+	DmPD_Valve					: BOOL;
+	DmPD_RotateCW_VSGtoMR02		: BOOL;	
+	DmPD_RotateCW_VSGtoCB		: BOOL;
+	DmPD_RotateCW_MR02toCB		: BOOL;
+	DmPD_RotateCCW_CBtoMR02		: BOOL;	
+	DmPD_RotateCCW_CBtoVSG		: BOOL;
+	DmPD_RotateCCW_MR02toVSG	: BOOL;
+	MR01_HardeningProcess		: BOOL;
+	MR01_HorizontalForwards		: BOOL;
+	MR01_HoritzontalBackwards	: BOOL;
+	MR01_Compressor				: BOOL;
+	MR01_Valve					: BOOL;
+	MR02_CuttingProcess			: BOOL;
+	VSG_HorizontalForwards		: BOOL;
+	VSG_HorizontalBackwards		: BOOL;
+	VSG_Valve_VerticalDown		: BOOL;
+	VSG_Valve_SuctionToDmPD		: BOOL;
+	VSG_Valve_SuctionToMR01		: BOOL;
+	VSG_Compressor_VerticalDown : BOOL;
+	VSG_Compressor_SuctionToDmPD: BOOL;
+	VSG_Compressor_SuctionToMR01: BOOL;
+	
+// InitDriveMode Output Control	
+	Init_DmPD_RotateCCW				: BOOL;
+	Init_DmPD_RotateCW				: BOOL;
+	Init_MR01_HorizontalForwards	: BOOL;
+	Init_MR01_HorizontalBackwards	: BOOL;
+	Init_MR02_CuttingProcess		: BOOL;
+	Init_VSG_HorizontalForwards		: BOOL;
+	Init_VSG_HorizontalBackwards	: BOOL;
+END_VAR
+VAR_OUTPUT
+	ConveyorBeltForward: BOOL;
+	CompressorON: BOOL;
+	ValveDmPD_ON: BOOL;
+	RotateDmPD_CW: BOOL;
+	RotateDmPD_CCW: BOOL;
+	HardeningProcess : BOOL;
+	WorkpieceTableMoveHorizontalForwards : BOOL;
+	WorkpieceTableMoveHorizontalBackwards : BOOL;
+	ValveMR01_ON : BOOL;
+	CuttingProcess_ON : BOOL;
+	MoveVSGHorizontalForwards : BOOL;
+	MoveVSGHorizontalBackwards : BOOL;
+	ValveVSG_VerticalDown_ON : BOOL;
+	ValveVSG_Suction_ON : BOOL;
+	Light_Q1: BOOL;
+	Light_Q2: BOOL;
+	Light_Q3: BOOL;
+	
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ConveyorBeltForward := ((((((F1) OR (A2))) AND (CB_Forwards))) OR (((Start) AND (F4))));
+CompressorON := ((((((F1) OR (A2))) AND (((DmPD_Compressor) OR (MR01_Compressor) OR (VSG_Compressor_VerticalDown) OR (VSG_Compressor_SuctionToDmPD) OR (VSG_Compressor_SuctionToMR01))))) OR (((Start) AND (F4))));
+ValveDmPD_ON := ((((((F1) OR (A2))) AND (DmPD_Valve))) OR (((Start) AND (F4))));
+RotateDmPD_CW := ((((((F1) OR (A2))) AND (((DmPD_RotateCW_VSGtoMR02) OR (DmPD_RotateCW_MR02toCB) OR (DmPD_RotateCW_VSGtoCB))))) OR (((Start) AND (F4))) OR (((A6) AND (Init_DmPD_RotateCW))));
+RotateDmPD_CCW := ((((((F1) OR (A2))) AND (((DmPD_RotateCCW_CBtoMR02) OR (DmPD_RotateCCW_CBtoVSG) OR (DmPD_RotateCCW_MR02toVSG))))) OR (((Start) AND (F4))) OR (((A6) AND (Init_DmPD_RotateCCW))));
+HardeningProcess := ((((((F1) OR (A2))) AND (MR01_HardeningProcess))) OR (((Start) AND (F4))));
+WorkpieceTableMoveHorizontalForwards := ((((((F1) OR (A2))) AND (MR01_HorizontalForwards))) OR (((Start) AND (F4))) OR (((A6) AND (Init_MR01_HorizontalForwards))));
+WorkpieceTableMoveHorizontalBackwards := ((((((F1) OR (A2))) AND (MR01_HoritzontalBackwards))) OR (((Start) AND (F4))) OR (((A6) AND (Init_MR01_HorizontalBackwards))));
+ValveMR01_ON := ((((((F1) OR (A2))) AND (MR01_Valve))) OR (((Start) AND (F4))));
+CuttingProcess_ON := ((((((F1) OR (A2))) AND (MR02_CuttingProcess))) OR (((Start) AND (F4))) OR (((A6) AND (Init_MR02_CuttingProcess))));
+MoveVSGHorizontalForwards := ((((((F1) OR (A2))) AND (VSG_HorizontalForwards))) OR (((Start) AND (F4))) OR (((A6) AND (Init_VSG_HorizontalForwards))));
+MoveVSGHorizontalBackwards := ((((((F1) OR (A2))) AND (VSG_HorizontalBackwards))) OR (((Start) AND (F4))) OR (((A6) AND (Init_VSG_HorizontalBackwards))));
+ValveVSG_VerticalDown_ON := ((((((F1) OR (A2))) AND (VSG_Valve_VerticalDown))) OR (((Start) AND (F4))));
+ValveVSG_Suction_ON := ((((((F1) OR (A2))) AND (((VSG_Valve_SuctionToDmPD) OR (VSG_Valve_SuctionToMR01))))) OR (((Start) AND (F4))));
+Light_Q1 := F1;
+Light_Q2 := F4;
+Light_Q3 := A1;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

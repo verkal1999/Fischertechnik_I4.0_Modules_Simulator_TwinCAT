@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <GVL Name="OPCUA" Id="{ea779af2-d8a5-4483-83ad-de0f261bea60}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	{attribute 'OPC.UA.DA' := '1'} // für OPC UA freigeben
+	TriggerD1 : BOOL := FALSE;
+	{attribute 'OPC.UA.DA' := '1'} // für OPC UA freigeben
+	TriggerD2 : BOOL := FALSE;
+	{attribute 'OPC.UA.DA' := '1'} // für OPC UA freigeben
+	TriggerD3 : BOOL := FALSE;
+	{attribute 'OPC.UA.DA' := '1'} // für OPC UA freigeben
+    {attribute 'OPC.UA.DA.Access' := '3'} // Read/Write
+	Alt_found : BOOL := FALSE;
+	{attribute 'OPC.UA.DA' := '1'} // für OPC UA freigeben
+    {attribute 'OPC.UA.DA.Access' := '3'} // Read/Write
+	Alt_abort : BOOL := FALSE;
+	{attribute 'OPC.UA.DA' := '1'} // für OPC UA freigeben
+    {attribute 'OPC.UA.DA.Access' := '3'} // Read/Write
+	Diag_finished : BOOL := FALSE;
+	{attribute 'OPC.UA.DA' := '1'} // für OPC UA freigeben
+    {attribute 'OPC.UA.DA.Access' := '3'} // Read/Write
+	Cycle_finished : BOOL := FALSE;
+	{attribute 'OPC.UA.DA' := '1'}
+    LastGEMMAStateBeforeFailure: STRING;
+	{attribute 'OPC.UA.DA' := '1'}
+    lastExecutedSkill: STRING := '';
+	{attribute 'OPC.UA.DA' := '1'}
+	{attribute 'OPC.UA.DA.Access' := '3'} // Read/Write
+    lastFinishedSkill: STRING := '';
+	{attribute 'OPC.UA.DA' := '1'}
+    lastExecutedProcess: STRING := '';
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

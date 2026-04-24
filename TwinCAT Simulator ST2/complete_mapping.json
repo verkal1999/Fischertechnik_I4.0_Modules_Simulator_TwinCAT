@@ -1,0 +1,1297 @@
+{
+  "hardware_io": [
+    {
+      "variable": "diNotAus_Kanal_A",
+      "physical_channel": "xDI%139.2_S1_2",
+      "consumed_by": [
+        "HRL_SkillSet",
+        "MBS_SkillSet",
+        "SST_SkillSet",
+        "VSG_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "diNotAus_Kanal_B",
+      "physical_channel": "xDI%139.3_S1_2",
+      "consumed_by": [
+        "HRL_SkillSet",
+        "MBS_SkillSet",
+        "SST_SkillSet",
+        "VSG_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_Enc_horizontal_I1",
+      "physical_channel": "udiDI%41.0_A2_5",
+      "consumed_by": [
+        "HRL_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_Enc_horizontal_I2",
+      "physical_channel": "udiDI%47.0_A2_5",
+      "consumed_by": [
+        "HRL_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_Enc_vertikal_I1",
+      "physical_channel": "udiDI%53.0_A2_5",
+      "consumed_by": [
+        "HRL_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_Enc_vertikal_I2",
+      "physical_channel": "udiDI%59.0_A2_5",
+      "consumed_by": [
+        "HRL_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_Ref_Taster_horizontal",
+      "physical_channel": "xDI%136.0_A2_2",
+      "consumed_by": [
+        "HRL_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_LS_innen",
+      "physical_channel": "xDI%136.1_A2_1",
+      "consumed_by": [
+        "HRL_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_LS_aussen",
+      "physical_channel": "xDI%136.2_A2_1",
+      "consumed_by": [
+        "HRL_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_Ref_Taster_vertikal",
+      "physical_channel": "xDI%136.3_A2_2",
+      "consumed_by": [
+        "HRL_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_Spursensor_1_unten",
+      "physical_channel": "xDI%136.4_A2_3",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_Spursensor_2_oben",
+      "physical_channel": "xDI%136.5_A2_3",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_Ref_Taster_Ausleger_vorne",
+      "physical_channel": "xDI%136.6_A2_2",
+      "consumed_by": [
+        "HRL_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_Ref_Taster_Ausleger_hinten",
+      "physical_channel": "xDI%136.7_A2_2",
+      "consumed_by": [
+        "HRL_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_MOT_Foerderband_vorwaerts",
+      "physical_channel": "xDO%111.0_A2_2",
+      "consumed_by": [],
+      "produced_by": [
+        "HRL_SkillSet"
+      ]
+    },
+    {
+      "variable": "HRL_MOT_Foerderband_rueckwaerts",
+      "physical_channel": "xDO%111.1_A2_2",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_MOT_horizontal_zum_Regal",
+      "physical_channel": "xDO%111.2_A2_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_MOT_horizontal_zum_Foerderband",
+      "physical_channel": "xDO%111.3_A2_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_MOT_vertikal_runter",
+      "physical_channel": "xDO%111.4_A2_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_MOT_vertikal_hoch",
+      "physical_channel": "xDO%111.5_A2_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_MOT_Ausleger_vorwaerts",
+      "physical_channel": "xDO%111.6_A2_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "HRL_MOT_Ausleger_rueckwaerts",
+      "physical_channel": "xDO%111.7_A2_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_Ref_Taster_DK_Pos_Sauger",
+      "physical_channel": "xDI%137.0_A3_2",
+      "consumed_by": [
+        "MBS_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_Ref_Taster_DK_Pos_Foerderband",
+      "physical_channel": "xDI%137.1_A3_2",
+      "consumed_by": [
+        "MBS_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_LS_Ende_Foerderband",
+      "physical_channel": "xDI%137.2_A3_1",
+      "consumed_by": [
+        "MBS_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_Ref_Taster_DK_Pos_Saege",
+      "physical_channel": "xDI%137.3_A3_2",
+      "consumed_by": [
+        "MBS_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_Ref_Taster_Sauger_Pos_DK",
+      "physical_channel": "xDI%137.4_A3_2",
+      "consumed_by": [
+        "MBS_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_Ref_Taster_Ofenschieber_innen",
+      "physical_channel": "xDI%137.5_A3_2",
+      "consumed_by": [
+        "MBS_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_Ref_Taster_Ofenschieber_aussen",
+      "physical_channel": "xDI%137.6_A3_2",
+      "consumed_by": [
+        "MBS_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_Ref_Taster_Sauger_Pos_Ofen",
+      "physical_channel": "xDI%137.7_A3_2",
+      "consumed_by": [
+        "MBS_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_LS_Ofen",
+      "physical_channel": "xDI%138.0_A3_1",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_MOT_DK_CW",
+      "physical_channel": "xDO%112.0_A3_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_MOT_DK_CCW",
+      "physical_channel": "xDO%112.1_A3_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_MOT_Foerderband_vorwaerts",
+      "physical_channel": "xDO%112.2_A3_2",
+      "consumed_by": [],
+      "produced_by": [
+        "MBS_SkillSet"
+      ]
+    },
+    {
+      "variable": "MBS_MOT_Saege",
+      "physical_channel": "xDO%112.3_A3_6",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_MOT_Ofenschieber_einfahren",
+      "physical_channel": "xDO%112.4_A3_3",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_MOT_Ofenschieber_ausfahren",
+      "physical_channel": "xDO%112.5_A3_3",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_MOT_Sauger_zum_Ofen",
+      "physical_channel": "xDO%112.6_A3_5",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_MOT_Sauger_zum_DK",
+      "physical_channel": "xDO%112.7_A3_5",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_Leuchte_Ofen",
+      "physical_channel": "xDO%113.0_A3_7",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_Kompressor",
+      "physical_channel": "xDO%113.1_A3_8",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_MV_Vakuum",
+      "physical_channel": "xDO%113.2_A3_5",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_MV_senken",
+      "physical_channel": "xDO%113.3_A3_5",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_MV_Ofentuer",
+      "physical_channel": "xDO%113.4_A3_5",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "MBS_MV_Schieber",
+      "physical_channel": "xDO%113.5_A3_5",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "SST_MV_weiss",
+      "physical_channel": "xDO%115.0_A5_5",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "SST_MV_rot",
+      "physical_channel": "xDO%115.1_A5_5",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "SST_MV_blau",
+      "physical_channel": "xDO%115.2_A5_5",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "SST_Impulstaster",
+      "physical_channel": "xDI%138.4_A5_1",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "SST_LS_Eingang",
+      "physical_channel": "xDI%138.5_A5_1",
+      "consumed_by": [
+        "SST_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "SST_LS_nach_Farbsensor",
+      "physical_channel": "xDI%138.6_A5_1",
+      "consumed_by": [
+        "SST_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "SST_LS_weiss",
+      "physical_channel": "xDI%138.7_A5_1",
+      "consumed_by": [
+        "SST_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "SST_LS_rot",
+      "physical_channel": "xDI%139.0_A5_1",
+      "consumed_by": [
+        "SST_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "SST_LS_blau",
+      "physical_channel": "xDI%139.1_A5_1",
+      "consumed_by": [
+        "SST_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "SST_MOT_Foerderband",
+      "physical_channel": "xDO%114.6_A5_2",
+      "consumed_by": [],
+      "produced_by": [
+        "SST_SkillSet"
+      ]
+    },
+    {
+      "variable": "SST_Kompressor",
+      "physical_channel": "xDO%114.7_A5_8",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_Enc_vertikal_I1",
+      "physical_channel": "udiDI%65.0_A4_5",
+      "consumed_by": [
+        "VSG_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_Enc_vertikal_I2",
+      "physical_channel": "udiDI%71.0_A4_5",
+      "consumed_by": [
+        "VSG_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_Enc_horizontal_I1",
+      "physical_channel": "udiDI%77.0_A4_5",
+      "consumed_by": [
+        "VSG_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_Enc_horizontal_I2",
+      "physical_channel": "udiDI%83.0_A4_5",
+      "consumed_by": [
+        "VSG_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_Enc_drehen_I1",
+      "physical_channel": "udiDI%89.0_A4_5",
+      "consumed_by": [
+        "VSG_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_Enc_drehen_I2",
+      "physical_channel": "udiDI%95.0_A4_5",
+      "consumed_by": [
+        "VSG_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_Ref_Schalter_vertikal",
+      "physical_channel": "xDI%138.1_A4_2",
+      "consumed_by": [
+        "VSG_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_Ref_Schalter_horizontal",
+      "physical_channel": "xDI%138.2_A4_2",
+      "consumed_by": [
+        "VSG_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_Ref_Schalter_drehen",
+      "physical_channel": "xDI%138.3_A4_2",
+      "consumed_by": [
+        "VSG_SkillSet"
+      ],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_MOT_vertikal_hoch",
+      "physical_channel": "xDO%113.6_A4_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_MOT_vertikal_runter",
+      "physical_channel": "xDO%113.7_A4_4",
+      "consumed_by": [],
+      "produced_by": [
+        "VSG_SkillSet"
+      ]
+    },
+    {
+      "variable": "VSG_MOT_horizontal_rueckwaerts",
+      "physical_channel": "xDO%114.0_A4_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_MOT_horizontal_vorwaerts",
+      "physical_channel": "xDO%114.1_A4_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_MOT_drehen_CW",
+      "physical_channel": "xDO%114.2_A4_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_MOT_drehen_CCW",
+      "physical_channel": "xDO%114.3_A4_4",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_Kompressor",
+      "physical_channel": "xDO%114.4_A4_8",
+      "consumed_by": [],
+      "produced_by": []
+    },
+    {
+      "variable": "VSG_MV_Vakuum",
+      "physical_channel": "xDO%114.5_A4_5",
+      "consumed_by": [],
+      "produced_by": []
+    }
+  ],
+  "program_dependencies": {
+    "HRL_SkillSet": [
+      {
+        "input": "HRL_RGB_HorizontalForwards01",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "HRL_RGB_Backwards01",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "HRL_Ref_Taster_vertikal",
+        "hardware_targets": [
+          "HRL_Ref_Taster_vertikal"
+        ]
+      },
+      {
+        "input": "HRL_LS_innen",
+        "hardware_targets": [
+          "HRL_LS_innen"
+        ]
+      },
+      {
+        "input": "HRL_Enc_horizontal_I1",
+        "hardware_targets": [
+          "HRL_Enc_horizontal_I1"
+        ]
+      },
+      {
+        "input": "A1",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "Init_SRM_MotorBackwards",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "HRL_Ref_Taster_horizontal",
+        "hardware_targets": [
+          "HRL_Ref_Taster_horizontal"
+        ]
+      },
+      {
+        "input": "HRL_CB_backwards",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "HRL_Enc_vertikal_I1",
+        "hardware_targets": [
+          "HRL_Enc_vertikal_I1"
+        ]
+      },
+      {
+        "input": "diNotAus_Kanal_B",
+        "hardware_targets": [
+          "diNotAus_Kanal_B"
+        ]
+      },
+      {
+        "input": "HRL_LS_aussen",
+        "hardware_targets": [
+          "HRL_LS_aussen"
+        ]
+      },
+      {
+        "input": "HRL_RGB_Forwards01",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "HRL_Ref_Taster_Ausleger_hinten",
+        "hardware_targets": [
+          "HRL_Ref_Taster_Ausleger_hinten"
+        ]
+      },
+      {
+        "input": "HRL_Enc_vertikal_I2",
+        "hardware_targets": [
+          "HRL_Enc_vertikal_I2"
+        ]
+      },
+      {
+        "input": "HRL_Enc_horizontal_I2",
+        "hardware_targets": [
+          "HRL_Enc_horizontal_I2"
+        ]
+      },
+      {
+        "input": "diNotAus_Kanal_A",
+        "hardware_targets": [
+          "diNotAus_Kanal_A"
+        ]
+      },
+      {
+        "input": "HRL_RGB_VertikalUp02",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "HRL_CB_forwards",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "HRL_RGB_VertikalDown01",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "HRL_RGB_HorizontalBackwards02",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "HRL_Ref_Taster_Ausleger_vorne",
+        "hardware_targets": [
+          "HRL_Ref_Taster_Ausleger_vorne"
+        ]
+      }
+    ],
+    "MBS_SkillSet": [
+      {
+        "input": "MBS_Ref_Taster_DK_Pos_Sauger",
+        "hardware_targets": [
+          "MBS_Ref_Taster_DK_Pos_Sauger"
+        ]
+      },
+      {
+        "input": "MBS_Ref_Taster_Sauger_Pos_Ofen",
+        "hardware_targets": [
+          "MBS_Ref_Taster_Sauger_Pos_Ofen"
+        ]
+      },
+      {
+        "input": "Init_MR01_HorizontalForwards",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "VSG_MoveHorizontalBackwards",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "MBS_Ref_Taster_DK_Pos_Saege",
+        "hardware_targets": [
+          "MBS_Ref_Taster_DK_Pos_Saege"
+        ]
+      },
+      {
+        "input": "Init_VSG_HorizontalForwards",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "VSG_Compressor_SuctionProcessToDmPD",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "A1",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "DmPD_RotateCCWformMR02toVSG",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "DmPD_Compressor_HorizontalMove",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "DmPD_RotateCWfromMR02toCB",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "MR01_MoveOvenslideIn",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "DmPD_RotateCCWformCBtoVSG",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "MBS_Ref_Taster_DK_Pos_Foerderband",
+        "hardware_targets": [
+          "MBS_Ref_Taster_DK_Pos_Foerderband"
+        ]
+      },
+      {
+        "input": "diNotAus_Kanal_B",
+        "hardware_targets": [
+          "diNotAus_Kanal_B"
+        ]
+      },
+      {
+        "input": "MR01_HardeningProcess",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "VSG_Compressor_VerticalMove",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "MR02_CuttingProcess",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "VSG_Compressor_SuctionProcessToMR01",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "diNotAus_Kanal_A",
+        "hardware_targets": [
+          "diNotAus_Kanal_A"
+        ]
+      },
+      {
+        "input": "Init_DmPD_RotateCW",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "MBS_Ref_Taster_Sauger_Pos_DK",
+        "hardware_targets": [
+          "MBS_Ref_Taster_Sauger_Pos_DK"
+        ]
+      },
+      {
+        "input": "CB_MoveForwards",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "MBS_LS_Ende_Foerderband",
+        "hardware_targets": [
+          "MBS_LS_Ende_Foerderband"
+        ]
+      },
+      {
+        "input": "Init_MR02_CuttingProcess",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "MBS_Ref_Taster_Ofenschieber_aussen",
+        "hardware_targets": [
+          "MBS_Ref_Taster_Ofenschieber_aussen"
+        ]
+      },
+      {
+        "input": "MR01_Compressor_SecuringProcess",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "MR01_MoveOvenslideOut",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "DmPD_RotateCWformVSGtoMR02",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "DmPD_RotateCCWformCBtoMR02",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "MBS_Ref_Taster_Ofenschieber_innen",
+        "hardware_targets": [
+          "MBS_Ref_Taster_Ofenschieber_innen"
+        ]
+      },
+      {
+        "input": "DmPD_RotateCWromVSGtoCB",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "VSG_MoveHorizontalForwards",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      }
+    ],
+    "SST_SkillSet": [
+      {
+        "input": "SST_LS_blau",
+        "hardware_targets": [
+          "SST_LS_blau"
+        ]
+      },
+      {
+        "input": "SST_LS_rot",
+        "hardware_targets": [
+          "SST_LS_rot"
+        ]
+      },
+      {
+        "input": "CB_MoveForwardToPD02",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "SST_LS_weiss",
+        "hardware_targets": [
+          "SST_LS_weiss"
+        ]
+      },
+      {
+        "input": "SST_LS_Eingang",
+        "hardware_targets": [
+          "SST_LS_Eingang"
+        ]
+      },
+      {
+        "input": "SST_LS_nach_Farbsensor",
+        "hardware_targets": [
+          "SST_LS_nach_Farbsensor"
+        ]
+      },
+      {
+        "input": "PD02_Compressor",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "CB_MoveForwardTillEnd",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "Init_PD01_Compressor",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "A1",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "diNotAus_Kanal_B",
+        "hardware_targets": [
+          "diNotAus_Kanal_B"
+        ]
+      },
+      {
+        "input": "CB_MoveForwardToPD03",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "diNotAus_Kanal_A",
+        "hardware_targets": [
+          "diNotAus_Kanal_A"
+        ]
+      },
+      {
+        "input": "PD01_Compressor",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "CB_MoveForwardToPD01",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "PD03_Compressor",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      }
+    ],
+    "VSG_SkillSet": [
+      {
+        "input": "VSG_Enc_drehen_I2",
+        "hardware_targets": [
+          "VSG_Enc_drehen_I2"
+        ]
+      },
+      {
+        "input": "VSG_Ref_Schalter_horizontal",
+        "hardware_targets": [
+          "VSG_Ref_Schalter_horizontal"
+        ]
+      },
+      {
+        "input": "VSG_MoveHorizontalBackwards02",
+        "hardware_targets": [
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "VSG_MoveRotationCCW02",
+        "hardware_targets": [
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "VSG_MoveHorizontalForwards01",
+        "hardware_targets": [
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "Init_VSG_HorizontalForwards",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "VSG_Ref_Schalter_drehen",
+        "hardware_targets": [
+          "VSG_Ref_Schalter_drehen"
+        ]
+      },
+      {
+        "input": "VSG_Enc_drehen_I1",
+        "hardware_targets": [
+          "VSG_Enc_drehen_I1"
+        ]
+      },
+      {
+        "input": "A1",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "VSG_Compressor",
+        "hardware_targets": [
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "VSG_Enc_horizontal_I2",
+        "hardware_targets": [
+          "VSG_Enc_horizontal_I2"
+        ]
+      },
+      {
+        "input": "diNotAus_Kanal_B",
+        "hardware_targets": [
+          "diNotAus_Kanal_B"
+        ]
+      },
+      {
+        "input": "VSG_MoveVerticalDown01",
+        "hardware_targets": [
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "Init_VSG_RotationCW",
+        "hardware_targets": [
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "diNotAus_Kanal_A",
+        "hardware_targets": [
+          "diNotAus_Kanal_A"
+        ]
+      },
+      {
+        "input": "VSG_MoveVerticalUp02",
+        "hardware_targets": [
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "VSG_Ref_Schalter_vertikal",
+        "hardware_targets": [
+          "VSG_Ref_Schalter_vertikal"
+        ]
+      },
+      {
+        "input": "VSG_Enc_vertikal_I1",
+        "hardware_targets": [
+          "VSG_Enc_vertikal_I1"
+        ]
+      },
+      {
+        "input": "VSG_Enc_vertikal_I2",
+        "hardware_targets": [
+          "VSG_Enc_vertikal_I2"
+        ]
+      },
+      {
+        "input": "VSG_Enc_horizontal_I1",
+        "hardware_targets": [
+          "VSG_Enc_horizontal_I1"
+        ]
+      },
+      {
+        "input": "VSG_MoveRotationCW01",
+        "hardware_targets": [
+          "VSG_MOT_vertikal_runter"
+        ]
+      }
+    ],
+    "HRL_ControlOfOutputs": [
+      {
+        "input": "A1",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      }
+    ],
+    "MBS_ControlOfOutputs": [
+      {
+        "input": "Init_MR01_HorizontalForwards",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "Init_VSG_HorizontalForwards",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "A1",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "MR01_HardeningProcess",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "MR02_CuttingProcess",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "Init_DmPD_RotateCW",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "Init_MR02_CuttingProcess",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      }
+    ],
+    "SST_ControlOfOutputs": [
+      {
+        "input": "CB_MoveForwardToPD02",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "PD02_Compressor",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "CB_MoveForwardTillEnd",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "Init_PD01_Compressor",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "A1",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "CB_MoveForwardToPD03",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "PD01_Compressor",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "CB_MoveForwardToPD01",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      },
+      {
+        "input": "PD03_Compressor",
+        "hardware_targets": [
+          "SST_MOT_Foerderband"
+        ]
+      }
+    ],
+    "VSG_ControlOfOutputs": [
+      {
+        "input": "Init_VSG_HorizontalForwards",
+        "hardware_targets": [
+          "MBS_MOT_Foerderband_vorwaerts"
+        ]
+      },
+      {
+        "input": "A1",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "VSG_Compressor",
+        "hardware_targets": [
+          "VSG_MOT_vertikal_runter"
+        ]
+      },
+      {
+        "input": "Init_VSG_RotationCW",
+        "hardware_targets": [
+          "VSG_MOT_vertikal_runter"
+        ]
+      }
+    ],
+    "HRL_OperatingModes": [
+      {
+        "input": "A1",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      }
+    ],
+    "MBS_OperatingModes": [
+      {
+        "input": "A1",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      }
+    ],
+    "SST_OperatingModes": [
+      {
+        "input": "A1",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      }
+    ],
+    "VSG_OperatingModes": [
+      {
+        "input": "A1",
+        "hardware_targets": [
+          "HRL_MOT_Foerderband_vorwaerts",
+          "MBS_MOT_Foerderband_vorwaerts",
+          "SST_MOT_Foerderband",
+          "VSG_MOT_vertikal_runter"
+        ]
+      }
+    ]
+  }
+}

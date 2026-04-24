@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="VSG_ControlOfOutputs" Id="{9e4ec3b4-9d8b-4abe-9ebc-d944bb3cae8d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK VSG_ControlOfOutputs
+VAR_INPUT
+	F4							: BOOL;
+	F1							: BOOL;
+	A2							: BOOL;
+	A1							: BOOL;
+	A6							: BOOL;
+	Start						: BOOL;
+	VSG_VertikalDown01			: BOOL; 
+	VSG_VertikalDown02			: BOOL; 
+	VSG_VertikalUp01			: BOOL;
+	VSG_VertikalUp02			: BOOL; 
+	VSG_HorizontalForwards01 	: BOOL; 
+	VSG_HorizontalForwards02	: BOOL;
+	VSG_HorizontalBackwards01 	: BOOL; 
+	VSG_HorizontalBackwards02 	: BOOL;
+	VSG_RotationCW01		 	: BOOL; 
+	VSG_RotationCW02		 	: BOOL;
+	VSG_RotationCCW01		 	: BOOL; 
+	VSG_RotationCCW02		 	: BOOL;
+	VSG_Compressor				: BOOL;
+	VSG_Valve					: BOOL;
+	Init_VSG_VertikalUp			: BOOL;
+	Init_VSG_VertikalDown		: BOOL;	
+	Init_VSG_HorizontalForwards : BOOL;
+	Init_VSG_HorizontalBackwards: BOOL;
+	Init_VSG_RotationCW			: BOOL;
+	Init_VSG_RotationCCW		: BOOL;
+
+END_VAR
+VAR_OUTPUT
+	MoveVerticalDown : BOOL;
+	MoveVerticalUp : BOOL;
+	MoveHorizontalForwards : BOOL;
+	MoveHorizontalBackwards : BOOL;
+	MoveRotationCW	: BOOL;
+	MoveRotationCCW : BOOL;
+	CompressorON : BOOL;
+	ValveON : BOOL;
+	Light_Q1: BOOL;
+	Light_Q2: BOOL;
+	Light_Q3: BOOL;
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[MoveVerticalDown := ((((((F1) OR (A2))) AND (((VSG_VertikalDown01) OR (VSG_VertikalDown02) OR (Init_VSG_VertikalDown))))) OR (((Start) AND (F4))));
+MoveVerticalUp := ((((((F1) OR (A2))) AND (((VSG_VertikalUp01) OR (VSG_VertikalUp02) OR (Init_VSG_VertikalUp))))) OR (((Start) AND (F4))));
+MoveHorizontalForwards := ((((((F1) OR (A2))) AND (((VSG_HorizontalForwards01) OR (VSG_HorizontalForwards02) OR (Init_VSG_HorizontalForwards))))) OR (((Start) AND (F4))));
+MoveHorizontalBackwards := ((((((F1) OR (A2))) AND (((VSG_HorizontalBackwards01) OR (VSG_HorizontalBackwards02) OR (Init_VSG_HorizontalBackwards))))) OR (((Start) AND (F4))));
+MoveRotationCW := ((((((F1) OR (A2))) AND (((VSG_RotationCW01) OR (VSG_RotationCW02) OR (Init_VSG_RotationCW))))) OR (((Start) AND (F4))));
+MoveRotationCCW := ((((((F1) OR (A2))) AND (((VSG_RotationCCW01) OR (VSG_RotationCCW02) OR (Init_VSG_RotationCCW))))) OR (((Start) AND (F4))));
+CompressorON := ((((((F1) OR (A2))) AND (VSG_Compressor))) OR (((Start) AND (F4))));
+ValveON := ((((((F1) OR (A2))) AND (VSG_Valve))) OR (((Start) AND (F4))));
+Light_Q1 := F1;
+Light_Q2 := F4;
+Light_Q3 := A1;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

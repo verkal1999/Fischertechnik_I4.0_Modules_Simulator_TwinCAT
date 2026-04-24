@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <GVL Name="GVL_VSG_Sim" Id="{3010beb7-11be-4e52-b02c-3c377175ee71}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+    // Simulierte VSG Eingänge
+    VSG_Enc_vertikal_I1 : UDINT;
+    VSG_Enc_vertikal_I2 : UDINT;
+
+    VSG_Enc_horizontal_I1 : UDINT;
+    VSG_Enc_horizontal_I2 : UDINT;
+
+    VSG_Enc_drehen_I1 : UDINT;
+    VSG_Enc_drehen_I2 : UDINT;
+
+    VSG_Ref_Schalter_vertikal : BOOL;
+    VSG_Ref_Schalter_horizontal : BOOL;
+    VSG_Ref_Schalter_drehen : BOOL;
+
+    // Simulierte VSG Ausgänge
+    VSG_MOT_vertikal_hoch : BOOL;
+    VSG_MOT_vertikal_runter : BOOL;
+
+    VSG_MOT_horizontal_vorwaerts : BOOL;
+    VSG_MOT_horizontal_rueckwaerts : BOOL;
+
+    VSG_MOT_drehen_CW : BOOL;
+    VSG_MOT_drehen_CCW : BOOL;
+
+    VSG_Kompressor : BOOL;
+    VSG_MV_Vakuum : BOOL;
+
+    VSG_K1_4_Zaehler_Zuruecksetzen : BOOL;
+    VSG_K1_5_Zaehler_Zuruecksetzen : BOOL;
+    VSG_K1_3_Zaehler_Zuruecksetzen : BOOL;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

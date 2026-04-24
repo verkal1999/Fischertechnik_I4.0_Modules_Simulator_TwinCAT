@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="MBS_VSG_InitialStateDrive" Id="{dd853b2b-2889-4b58-a3a2-30078fba8b12}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK MBS_VSG_InitialStateDrive
+VAR_INPUT
+	MethodCall_InitDrive : BOOL;
+	ESS : BOOL;
+	InputInitStateDrive : BOOL;
+	TouchSensor01 : BOOL;
+	TOF_Time_TSR : TIME;
+	InitDriveMode : BOOL;	
+END_VAR
+
+VAR_OUTPUT
+	DO_HorizontalMoveInitDriveVSG_01 : BOOL;
+	DO_HorizontalMoveInitDriveVSG_02 : BOOL;
+	ResetMethodCallInitDriveVSG : BOOL;
+END_VAR
+
+VAR
+	TSR : BOOL := TRUE;
+	DirectionHorizontal : STRING;
+
+	MBS_VSG_InitDrive: AxisControl_MultipleInputSensors;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[MBS_VSG_InitDrive(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := ESS,
+    Direction := DirectionHorizontal,
+    InitStateDrive_Input := InputInitStateDrive,
+    DI01 := ,
+    DI02 := TouchSensor01,
+    TouchSensorRelief := TSR,
+    TOF_Time_MotorControl := ,
+    TOF_Time_TouchSensorRelief := TOF_Time_TSR,
+    OperatingMode := InitDriveMode
+);
+DO_HorizontalMoveInitDriveVSG_01 := MBS_VSG_InitDrive.DigitalOutputControl_01;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

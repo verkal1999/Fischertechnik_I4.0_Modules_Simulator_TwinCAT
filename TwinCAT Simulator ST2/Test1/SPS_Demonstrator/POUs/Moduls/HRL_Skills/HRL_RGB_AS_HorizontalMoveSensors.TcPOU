@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="HRL_RGB_AS_HorizontalMoveSensors" Id="{fdd425f5-5069-4ec2-a114-acbbdc6dba2e}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'OPC.UA.DA.JobMethod' := 'JobMethode_HorizontalMove'}
+FUNCTION_BLOCK HRL_RGB_AS_HorizontalMoveSensors
+VAR
+	AlwaysTrue : BOOL := TRUE;
+	// Used for debugging purposes to display InputArguments of method call
+	MethodCall_HorizontalMove : BOOL := FALSE; // used to store InputArg "MethodCall" from Start() method
+	ResetMethodCall	: BOOL := FALSE;	
+	DirectionHorizontal : BOOL; // defines movement direction
+	TSR : BOOL; // Variable that is needed to perform the relief of the touch sensor
+	callCounterStart : ULINT; // counts how many times the Start() method has been called
+	callCounterCheckState : ULINT; // counts how many times the CheckState() method has been called
+	callCounterAbort : ULINT; // counts how many times the Abort() method has been called
+	
+	// Variables to determine if a job has been started (Start() method has been called) or finished
+	jobRunning : BOOL;
+	jobFinished : BOOL;
+
+	// State machine variable
+	state : UDINT;
+	
+	// FB Intatziation Variable
+	HRL_RGB_HorizontalMove : AxisControl_MultipleInputSensors;
+END_VAR
+	
+VAR_INPUT
+	ESS				: BOOL;
+	TouchSensor01 	: BOOL;
+	TouchSensor02 	: BOOL;
+	TOF_Time_TSR 	: TIME;
+	AutomaticMode	: BOOL;
+END_VAR
+
+VAR_OUTPUT
+	DO_MovingHorizontalRGB_01 : BOOL;
+	DO_MovingHorizontalRGB_02 : BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[HRL_RGB_HorizontalMove(
+    MethodCall := MethodCall_HorizontalMove,
+    EmergencyStopSignal := ESS,
+    Direction := DirectionHorizontal,
+    InitStateDrive_Input := FALSE,
+    DI01 := TouchSensor01,
+    DI02 := TouchSensor02,
+    TouchSensorRelief := TSR,
+    TOF_Time_MotorControl := T#0MS,
+    TOF_Time_TouchSensorRelief := TOF_Time_TSR,
+    OperatingMode := AutomaticMode
+);
+DO_MovingHorizontalRGB_01 := HRL_RGB_HorizontalMove.DigitalOutputControl_01;
+
+]]></ST>
+    </Implementation>
+    <Method Name="Abort" Id="{50ac65af-a222-48ac-a0a6-bd8d1e6ff556}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Abort : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterAbort := callCounterAbort + 1;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CheckState" Id="{947d6faf-2e9f-41ca-8dbf-261d1b7c9eb3}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD CheckState : HRESULT
+VAR_INPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR
+VAR_OUTPUT
+	bBusy : BOOL; // Do not change. Used by server to find out if the job is finished
+	
+	// List of OutputArguments for OPC UA method, may be customized
+	State : BOOL; // Abgeschlossener MethodCall
+	MethodCall: BOOL; //Input Recall
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterCheckState := callCounterCheckState + 1;
+IF NOT jobFinished THEN
+	bBusy := TRUE; // job is not finished yet
+	CheckState := 0; // no error
+ELSE
+	bBusy := FALSE; // job is finished
+	CheckState := 0; // done, no error occured during execution (OPC UA StatusCode "GOOD")
+	jobFinished := FALSE;
+	State := ResetMethodCall;
+	MethodCall := MethodCall_HorizontalMove;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Start" Id="{0a0ae153-5c0b-4101-8eaa-2930b560b0dd}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable' := '1'}
+METHOD Start : HRESULT
+VAR_INPUT
+	// List of InputArguments for OPC UA method, may be customized
+	MethodCall : BOOL; // some description
+	MovementDirection : BOOL;
+	TouchSensorRelief : BOOL;
+END_VAR
+VAR_OUTPUT
+	hdl : UDINT; // Do not change, used by server.
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[callCounterStart := callCounterStart + 1;
+
+MethodCall_HorizontalMove := MethodCall;
+DirectionHorizontal := MovementDirection;
+TSR := TouchSensorRelief;
+
+jobRunning := TRUE;
+Start := 0; // OPC UA StatusCode GOOD]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

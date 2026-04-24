@@ -1,0 +1,79 @@
+@startuml
+title Sequenzdiagramm – Simulation des Anwendungsbeispiels 2
+
+scale max 1000 width
+hide footbox
+autonumber
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam dpi 150
+skinparam maxMessageSize 300
+skinparam participantPadding 12
+skinparam BoxPadding 10
+skinparam sequence {
+    ArrowThickness 1
+    LifeLineBorderColor #6b7280
+    LifeLineBackgroundColor #f8fafc
+    ParticipantBorderColor #1f2937
+    ParticipantBackgroundColor #e5eef9
+    ParticipantFontColor #111827
+    ActorBorderColor #1f2937
+    ActorBackgroundColor #fff7ed
+    GroupBorderColor #9ca3af
+    GroupBackgroundColor #f9fafb
+}
+
+actor "Nutzer\n(Mensch)" as User
+participant "SkillOA-\nSimulator" as Sim
+participant "MSRGuard\nmit ExcH-Agent" as Guard
+
+box "Engineering-Laptop / TwinCAT 3" #dbeafe
+participant "OPC-UA-\nServer" as Ua
+participant "TwinCAT-\nSimulator\n(PLC Runtime 851)" as TcSim
+participant "Simulierte\nVariablen / I/O" as Vio
+end box
+
+note over Ua,TcSim
+Engineering-Laptop, TwinCAT im Simulationsmodus.
+OPC-UA-Server bindet Simulator-Symbole über
+ADS an Runtime 851. Echtzeit-Lizenzen deaktiviert.
+end note
+
+note over TcSim,Vio
+bSimMode = TRUE: Reale I/O-Signale durch
+_Sim-Variablen ersetzt (z. B. HRL_LS_aussen_Sim).
+Schreiben der Sim-Variablen über ADS-Port 851.
+end note
+
+Sim -> Ua : OPC-UA-Methode aufrufen()
+activate Ua
+Ua -> TcSim : Methoden-\naufruf\nüber ADS /\n851
+activate TcSim
+TcSim -> Vio : Simulations-\nlogik\n ausführen\n + Variablen\naktualisieren
+activate Vio
+Vio --> TcSim : Simulierter\n Status /\nMesswerte
+deactivate Vio
+
+alt Ausführung erfolgreich
+    TcSim --> Ua : Ergebnis /\nStatus OK
+    deactivate TcSim
+    Ua --> Sim : Method Response / Status OK
+else Fehlerfall
+    TcSim --> Ua : Fehlerstatus aus\nSimulation
+    deactivate TcSim
+    Ua --> Sim : Fehler gemeldet
+    Sim -> Sim : Zustandswechsel\n nach D2\n"unbekannter Fehler"
+    Sim -> Guard : Fehlerkontext\nDiagnose-\nanfrage
+    activate Guard
+    Guard --> User : Hinweise zur\nKorrektur /\nSimulation /\nParametrierung
+    User -> Vio : Simulationswerte oder Konfiguration anpassen
+    Vio --> User : Simulationszustand stabil
+    User --> Guard : Fehler behoben melden
+    Guard --> Sim : Neuer Stand\n übernommen\nund zurückgemeldet
+    deactivate Guard
+end
+
+deactivate Ua
+
+@enduml

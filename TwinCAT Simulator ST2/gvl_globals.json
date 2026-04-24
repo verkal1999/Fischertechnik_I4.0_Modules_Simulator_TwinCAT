@@ -1,0 +1,1127 @@
+[
+  {
+    "name": "GVL",
+    "globals": [
+      {
+        "name": "diNotAus_Kanal_A",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "diNotAus_Kanal_B",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      }
+    ]
+  },
+  {
+    "name": "GVL_HRL",
+    "globals": [
+      {
+        "name": "HRL_Enc_horizontal_I1",
+        "type": "UDINT",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_Enc_horizontal_I2",
+        "type": "UDINT",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_Enc_vertikal_I1",
+        "type": "UDINT",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_Enc_vertikal_I2",
+        "type": "UDINT",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_Ref_Taster_horizontal",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_LS_innen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_LS_aussen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_Ref_Taster_vertikal",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_Spursensor_1_unten",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_Spursensor_2_oben",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_Ref_Taster_Ausleger_vorne",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_Ref_Taster_Ausleger_hinten",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_MOT_Foerderband_vorwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_MOT_Foerderband_rueckwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_MOT_horizontal_zum_Regal",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_MOT_horizontal_zum_Foerderband",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_MOT_vertikal_runter",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_MOT_vertikal_hoch",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_MOT_Ausleger_vorwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_MOT_Ausleger_rueckwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_K1_1_Zaehler_Zuruecksetzen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "HRL_K1_2_Zaehler_Zuruecksetzen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      }
+    ]
+  },
+  {
+    "name": "GVL_HRL_Sim",
+    "globals": [
+      {
+        "name": "HRL_Enc_horizontal_I1",
+        "type": "UDINT",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_Enc_horizontal_I2",
+        "type": "UDINT",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_Enc_vertikal_I1",
+        "type": "UDINT",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_Enc_vertikal_I2",
+        "type": "UDINT",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_Ref_Taster_horizontal",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_LS_innen",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_LS_aussen",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_Ref_Taster_vertikal",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_Spursensor_1_unten",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_Spursensor_2_oben",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_Ref_Taster_Ausleger_vorne",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_Ref_Taster_Ausleger_hinten",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_MOT_Foerderband_vorwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_MOT_Foerderband_rueckwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_MOT_horizontal_zum_Regal",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_MOT_horizontal_zum_Foerderband",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_MOT_vertikal_runter",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_MOT_vertikal_hoch",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_MOT_Ausleger_vorwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_MOT_Ausleger_rueckwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_K1_1_Zaehler_Zuruecksetzen",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "HRL_K1_2_Zaehler_Zuruecksetzen",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      }
+    ]
+  },
+  {
+    "name": "GVL_MBS",
+    "globals": [
+      {
+        "name": "MBS_Ref_Taster_DK_Pos_Sauger",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_Ref_Taster_DK_Pos_Foerderband",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_LS_Ende_Foerderband",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_Ref_Taster_DK_Pos_Saege",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_Ref_Taster_Sauger_Pos_DK",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_Ref_Taster_Ofenschieber_innen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_Ref_Taster_Ofenschieber_aussen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_Ref_Taster_Sauger_Pos_Ofen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_LS_Ofen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_MOT_DK_CW",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_MOT_DK_CCW",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_MOT_Foerderband_vorwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_MOT_Saege",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_MOT_Ofenschieber_einfahren",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_MOT_Ofenschieber_ausfahren",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_MOT_Sauger_zum_Ofen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_MOT_Sauger_zum_DK",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_Leuchte_Ofen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_Kompressor",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_MV_Vakuum",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_MV_senken",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_MV_Ofentuer",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "MBS_MV_Schieber",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      }
+    ]
+  },
+  {
+    "name": "GVL_Sim",
+    "globals": [
+      {
+        "name": "bSimMode",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "diNotAus_Kanal_A",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "diNotAus_Kanal_B",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      }
+    ]
+  },
+  {
+    "name": "GVL_SST",
+    "globals": [
+      {
+        "name": "SST_MV_weiss",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "SST_MV_rot",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "SST_MV_blau",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "SST_Farbsensor",
+        "type": "INT",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "SST_Impulstaster",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "SST_LS_Eingang",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "SST_LS_nach_Farbsensor",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "SST_LS_weiss",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "SST_LS_rot",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "SST_LS_blau",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "SST_MOT_Foerderband",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "SST_Kompressor",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": false,
+        "opcua_write": false
+      }
+    ]
+  },
+  {
+    "name": "GVL_VSG",
+    "globals": [
+      {
+        "name": "VSG_Enc_vertikal_I1",
+        "type": "UDINT",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_Enc_vertikal_I2",
+        "type": "UDINT",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_Enc_horizontal_I1",
+        "type": "UDINT",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_Enc_horizontal_I2",
+        "type": "UDINT",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_Enc_drehen_I1",
+        "type": "UDINT",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_Enc_drehen_I2",
+        "type": "UDINT",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_Ref_Schalter_vertikal",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_Ref_Schalter_horizontal",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_Ref_Schalter_drehen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%I*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_MOT_vertikal_hoch",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_MOT_vertikal_runter",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_MOT_horizontal_rueckwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_MOT_horizontal_vorwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_MOT_drehen_CW",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_MOT_drehen_CCW",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_Kompressor",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_MV_Vakuum",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_K1_4_Zaehler_Zuruecksetzen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_K1_5_Zaehler_Zuruecksetzen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "VSG_K1_3_Zaehler_Zuruecksetzen",
+        "type": "BOOL",
+        "init": null,
+        "address": "%Q*",
+        "opcua_da": true,
+        "opcua_write": true
+      }
+    ]
+  },
+  {
+    "name": "GVL_VSG_Sim",
+    "globals": [
+      {
+        "name": "VSG_Enc_vertikal_I1",
+        "type": "UDINT",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_Enc_vertikal_I2",
+        "type": "UDINT",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_Enc_horizontal_I1",
+        "type": "UDINT",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_Enc_horizontal_I2",
+        "type": "UDINT",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_Enc_drehen_I1",
+        "type": "UDINT",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_Enc_drehen_I2",
+        "type": "UDINT",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_Ref_Schalter_vertikal",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_Ref_Schalter_horizontal",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_Ref_Schalter_drehen",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_MOT_vertikal_hoch",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_MOT_vertikal_runter",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_MOT_horizontal_vorwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_MOT_horizontal_rueckwaerts",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_MOT_drehen_CW",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_MOT_drehen_CCW",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_Kompressor",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_MV_Vakuum",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_K1_4_Zaehler_Zuruecksetzen",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_K1_5_Zaehler_Zuruecksetzen",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      },
+      {
+        "name": "VSG_K1_3_Zaehler_Zuruecksetzen",
+        "type": "BOOL",
+        "init": null,
+        "address": null,
+        "opcua_da": false,
+        "opcua_write": false
+      }
+    ]
+  },
+  {
+    "name": "OPCUA",
+    "globals": [
+      {
+        "name": "TriggerD1",
+        "type": "BOOL",
+        "init": "FALSE",
+        "address": null,
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "TriggerD2",
+        "type": "BOOL",
+        "init": "FALSE",
+        "address": null,
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "TriggerD3",
+        "type": "BOOL",
+        "init": "FALSE",
+        "address": null,
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "Alt_found",
+        "type": "BOOL",
+        "init": "FALSE",
+        "address": null,
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "Alt_abort",
+        "type": "BOOL",
+        "init": "FALSE",
+        "address": null,
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "Diag_finished",
+        "type": "BOOL",
+        "init": "FALSE",
+        "address": null,
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "Cycle_finished",
+        "type": "BOOL",
+        "init": "FALSE",
+        "address": null,
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "LastGEMMAStateBeforeFailure",
+        "type": "STRING",
+        "init": null,
+        "address": null,
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "lastExecutedSkill",
+        "type": "STRING",
+        "init": "''",
+        "address": null,
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "lastFinishedSkill",
+        "type": "STRING",
+        "init": "''",
+        "address": null,
+        "opcua_da": true,
+        "opcua_write": true
+      },
+      {
+        "name": "lastExecutedProcess",
+        "type": "STRING",
+        "init": "''",
+        "address": null,
+        "opcua_da": true,
+        "opcua_write": true
+      }
+    ]
+  }
+]

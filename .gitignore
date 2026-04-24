@@ -1,0 +1,35 @@
+# Claude Code
+.claude/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Visual Studio / TwinCAT
+.vs/
+
+# Zertifikate / Secrets
+certs/
+
+# Leere Hilfsdateien (Artefakte aus Shell-Befehlen)
+99
+rmdir
+where
+streamlit
+Dict[str
+
+# Output
+out/
+
+# TwinCAT generierte Outputs
+PLCreX_outputs/
+plcrex_exports/

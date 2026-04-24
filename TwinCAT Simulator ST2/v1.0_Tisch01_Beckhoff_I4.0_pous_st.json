@@ -1,0 +1,37 @@
+[
+  {
+    "kind": "POU",
+    "name": "FB_MyOpcUaMethod",
+    "pou_type": "FunctionBlock",
+    "implementation_lang": "ST",
+    "declaration": "FUNCTION_BLOCK PUBLIC FB_MyOpcUaMethod\nVAR_INPUT\n\tin1 : INT;\n\tin2 : INT;\nEND_VAR\nVAR_OUTPUT\n\tresult : INT;\nEND_VAR",
+    "implementation": "",
+    "io": {
+      "inputs": [
+        {
+          "name": "in1",
+          "address": null,
+          "type": "INT",
+          "init": null
+        },
+        {
+          "name": "in2",
+          "address": null,
+          "type": "INT",
+          "init": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "result",
+          "address": null,
+          "type": "INT",
+          "init": null
+        }
+      ],
+      "inouts": [],
+      "temps": []
+    },
+    "file": "C:\\Users\\Alexander Verkhov\\OneDrive\\Dokumente\\MPA\\twincat2\\TwinCAT\\Test1\\SPS_Demonstrator\\POUs\\MethodenBeispiele\\FB_MyOpcUaMethod.TcPOU"
+  }
+]

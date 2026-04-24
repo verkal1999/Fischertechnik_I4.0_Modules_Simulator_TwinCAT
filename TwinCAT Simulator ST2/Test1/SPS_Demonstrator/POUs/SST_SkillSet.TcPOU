@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="SST_SkillSet" Id="{f1826123-9a5f-4bce-85d0-6bcaa1fb4584}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM SST_SkillSet
+VAR
+//Farbscanner- & Sortiertanlage Skills
+	//ColorSensor Skills
+	{attribute 'OPC.UA.DA':= '1'}
+	SST_AutomaticColorDetection : SST_CS_AS_ColorDetection;
+	
+	//ConveyorBelt Skills
+	{attribute 'OPC.UA.DA':= '1'}
+	SST_ConveyorBeltMoveHorizontal_ToPD01 : SST_CB_AS_HorizontalMove;
+	{attribute 'OPC.UA.DA':= '1'}
+	SST_ConveyorBeltMoveHorizontal_ToPD02 : SST_CB_AS_HorizontalMove;
+	{attribute 'OPC.UA.DA':= '1'}
+	SST_ConveyorBeltMoveHorizontal_ToPD03 : SST_CB_AS_HorizontalMove;
+	{attribute 'OPC.UA.DA':= '1'}
+	SST_ConveyorBeltMoveHorizontal_TillEnd : SST_CB_AS_HorizontalMove;
+	
+	//PushingDeviceStation Skills
+	{attribute 'OPC.UA.DA':= '1'}
+	SST_PD01_HorizontalMove : SST_PD_AS_HorizontalMove;
+	{attribute 'OPC.UA.DA':= '1'}
+	SST_PD02_HorizontalMove : SST_PD_AS_HorizontalMove;
+	{attribute 'OPC.UA.DA':= '1'}
+	SST_PD03_HorizontalMove : SST_PD_AS_HorizontalMove;
+	
+	//Organisation FBs
+	SST_OperatingModes : SST_OperatingModes;
+	SST_ControlOfOutputs : SST_ControlOfOutputs;
+	
+	//InitialStateDrives	
+	SST_PD_InitStateDrive: SST_PD_InitialStateDrive;
+
+//Variablen zur Outputsteuerung
+	//Output-Variablen der Komponente ConveyorBelt	
+	CB_MoveForwardToPD01: BOOL;
+	CB_MoveForwardToPD02: BOOL;
+	CB_MoveForwardToPD03: BOOL;
+	CB_MoveForwardTillEnd: BOOL;
+	
+	//Output-Variablen der Komponente PushingDevice
+	PD01_Compressor : BOOL;
+	PD02_Compressor : BOOL;
+	PD03_Compressor : BOOL;
+	PD01_Valve : BOOL;
+	PD02_Valve : BOOL;
+	PD03_Valve : BOOL;	
+	
+	//Output-Variablen für Init-Fahrt
+	Init_PD01_Compressor : BOOL;
+	Init_PD02_Compressor : BOOL;
+	Init_PD03_Compressor : BOOL;
+	Init_PD01_Valve : BOOL;
+	Init_PD02_Valve : BOOL;
+	Init_PD03_Valve : BOOL;
+	
+//Variablensetzung: Sollte später über SkillOA eingesetzt werden ODER Hard in SPS codiert (Diskussionspunkt)
+	ResetButton: BOOL;
+	StartButton: BOOL;
+	ConfirmationButton: BOOL;
+
+//Time Constraints
+	TOF_Time_TransportPD01 : TIME;
+	TOF_Time_TransportPD02 : TIME;
+	TOF_Time_TransportPD03 : TIME;
+	TON_Time_PD01Compressor : TIME;
+	TON_Time_PD02Compressor : TIME;
+	TON_Time_PD03Compressor : TIME;
+	TON_Time_PD01Valve : TIME;
+	TON_Time_PD02Valve : TIME;
+	TON_Time_PD03Valve : TIME;
+	TON_Time_PowerOFFSelfSet : TIME := T#150MS;
+	
+//Variable Values for InitialStateDrive
+	MethodCall_InitStateDrive	: BOOL;
+	InputVar_InitStateDrive		: BOOL;
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[SST_OperatingModes(
+    Start := StartButton,
+    Stop := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    Reset := ResetButton,
+    Schalter := ConfirmationButton,
+    Schrittkette_GS := (((SST_PD_InitStateDrive.ResetMethodCallMovePD01) AND (SST_PD_InitStateDrive.ResetMethodCallMovePD02) AND (SST_PD_InitStateDrive.ResetMethodCallMovePD03)))
+);
+SST_ControlOfOutputs(
+    F4 := SST_OperatingModes.F4,
+    F1 := SST_OperatingModes.F1,
+    A2 := SST_OperatingModes.A2,
+    A1 := SST_OperatingModes.A1,
+    A6 := SST_OperatingModes.A6,
+    Start := SST_OperatingModes.Start,
+    CB_MoveForwardToPD01 := CB_MoveForwardToPD01,
+    CB_MoveForwardToPD02 := CB_MoveForwardToPD02,
+    CB_MoveForwardToPD03 := CB_MoveForwardToPD03,
+    CB_MoveForwardTillEnd := CB_MoveForwardTillEnd,
+    PD01_Compressor := PD01_Compressor,
+    PD02_Compressor := PD02_Compressor,
+    PD03_Compressor := PD03_Compressor,
+    PD01_Valve := PD01_Valve,
+    PD02_Valve := PD02_Valve,
+    PD03_Valve := PD03_Valve,
+    Init_PD01_Compressor := Init_PD01_Compressor,
+    Init_PD02_Compressor := Init_PD02_Compressor,
+    Init_PD03_Compressor := Init_PD03_Compressor,
+    Init_PD01_Valve := Init_PD01_Valve,
+    Init_PD02_Valve := Init_PD02_Valve,
+    Init_PD03_Valve := Init_PD03_Valve
+);
+GVL_SST.SST_MOT_Foerderband := SST_ControlOfOutputs.ConveyorBeltForward;
+SST_PD_InitStateDrive(
+    MethodCall_InitDrive := MethodCall_InitStateDrive,
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    InputInitialStateDrive := InputVar_InitStateDrive,
+    TON_Time_PowerOFFSelfSet := TON_Time_PowerOFFSelfSet,
+    InitDriveMode := SST_OperatingModes.A6
+);
+Init_PD01_Compressor := SST_PD_InitStateDrive.MotorControl_PD01_Compressor;
+SST_AutomaticColorDetection(Color_Sensor := );
+ := SST_AutomaticColorDetection.Color_White;
+SST_ConveyorBeltMoveHorizontal_ToPD01(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    LightSensor_01 := GVL_SST.SST_LS_Eingang,
+    LightSensor_02 := GVL_SST.SST_LS_nach_Farbsensor,
+    TOF_Time_Motoransteuerung := TOF_Time_TransportPD01,
+    AutomaticMode := SST_OperatingModes.A6
+);
+CB_MoveForwardToPD01 := SST_ConveyorBeltMoveHorizontal_ToPD01.DO_MovingConveyorBelt;
+SST_ConveyorBeltMoveHorizontal_ToPD02(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    LightSensor_01 := GVL_SST.SST_LS_Eingang,
+    LightSensor_02 := GVL_SST.SST_LS_nach_Farbsensor,
+    TOF_Time_Motoransteuerung := TOF_Time_TransportPD02,
+    AutomaticMode := SST_OperatingModes.A6
+);
+CB_MoveForwardToPD02 := SST_ConveyorBeltMoveHorizontal_ToPD02.DO_MovingConveyorBelt;
+SST_ConveyorBeltMoveHorizontal_ToPD03(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    LightSensor_01 := GVL_SST.SST_LS_Eingang,
+    LightSensor_02 := GVL_SST.SST_LS_nach_Farbsensor,
+    TOF_Time_Motoransteuerung := TOF_Time_TransportPD03,
+    AutomaticMode := SST_OperatingModes.A6
+);
+CB_MoveForwardToPD03 := SST_ConveyorBeltMoveHorizontal_ToPD03.DO_MovingConveyorBelt;
+SST_ConveyorBeltMoveHorizontal_TillEnd(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    LightSensor_01 := GVL_SST.SST_LS_Eingang,
+    LightSensor_02 := GVL_SST.SST_LS_nach_Farbsensor,
+    TOF_Time_Motoransteuerung := ,
+    AutomaticMode := SST_OperatingModes.A6
+);
+CB_MoveForwardTillEnd := SST_ConveyorBeltMoveHorizontal_TillEnd.DO_MovingConveyorBelt;
+SST_PD01_HorizontalMove(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    LightSensor_01 := GVL_SST.SST_LS_nach_Farbsensor,
+    LightSensor_02 := GVL_SST.SST_LS_weiss,
+    PowerOnDelay_Compressor := TON_Time_PD01Compressor,
+    PowerOnDelay_Valve := TON_Time_PD01Valve,
+    AutomaticMode := SST_OperatingModes.A6
+);
+PD01_Compressor := SST_PD01_HorizontalMove.DO_ControlCompressorPD_01;
+SST_PD02_HorizontalMove(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    LightSensor_01 := GVL_SST.SST_LS_nach_Farbsensor,
+    LightSensor_02 := GVL_SST.SST_LS_rot,
+    PowerOnDelay_Compressor := TON_Time_PD02Compressor,
+    PowerOnDelay_Valve := TON_Time_PD02Valve,
+    AutomaticMode := SST_OperatingModes.A6
+);
+PD02_Compressor := SST_PD02_HorizontalMove.DO_ControlCompressorPD_01;
+SST_PD03_HorizontalMove(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    LightSensor_01 := GVL_SST.SST_LS_nach_Farbsensor,
+    LightSensor_02 := GVL_SST.SST_LS_blau,
+    PowerOnDelay_Compressor := TON_Time_PD03Compressor,
+    PowerOnDelay_Valve := TON_Time_PD03Valve,
+    AutomaticMode := SST_OperatingModes.A6
+);
+PD03_Compressor := SST_PD03_HorizontalMove.DO_ControlCompressorPD_01;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

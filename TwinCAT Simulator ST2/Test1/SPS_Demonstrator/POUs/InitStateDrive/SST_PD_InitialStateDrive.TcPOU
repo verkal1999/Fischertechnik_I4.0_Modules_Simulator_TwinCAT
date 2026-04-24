@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="SST_PD_InitialStateDrive" Id="{c6325fc9-0401-4800-8de6-fd448147cce4}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK SST_PD_InitialStateDrive
+VAR_INPUT
+	MethodCall_InitDrive : BOOL;
+	ESS : BOOL;
+	InputInitialStateDrive : BOOL;
+	TON_Time_PowerOFFSelfSet : TIME;
+	InitDriveMode : BOOL;
+END_VAR
+VAR_OUTPUT
+	MotorControl_PD01_Compressor : BOOL;
+	MotorControl_PD01_Valve : BOOL;
+	MotorControl_PD02_Compressor : BOOL;
+	MotorControl_PD02_Valve : BOOL;
+	MotorControl_PD03_Compressor : BOOL;
+	MotorControl_PD03_Valve : BOOL;
+	ResetMethodCallMovePD01 : BOOL;
+	ResetMethodCallMovePD02 : BOOL;
+	ResetMethodCallMovePD03 : BOOL;
+END_VAR
+VAR
+	DestinationHorizontal : STRING;
+	PowerOfF_SelfSet : BOOL := TRUE;
+	SST_PD01_InitDrive : CompressorControl;
+	SST_PD02_InitDrive : CompressorControl;
+	SST_PD03_InitDrive : CompressorControl;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[SST_PD01_InitDrive(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := ESS,
+    Destination := DestinationHorizontal,
+    InitStateDrive_Input := InputInitialStateDrive,
+    DI01 := ,
+    DI02 := ,
+    DI03_EncoderStart01 := ,
+    DI04_EncoderStart02 := ,
+    DI05_EncoderStart03 := ,
+    DI06_EncoderStart04 := ,
+    DI07_EncoderStart05 := ,
+    DI08_EncoderStart06 := ,
+    DI09_EncoderTarget01 := ,
+    DI10_EncoderTarget02 := ,
+    DI11_EncoderTarget03 := ,
+    DI12_EncoderTarget04 := ,
+    DI13_EncoderTarget05 := ,
+    DI14_EncoderTarget06 := ,
+    PowerOFF_SelfSet := PowerOfF_SelfSet,
+    TON_Time_PowerOFFSelfSet := TON_Time_PowerOFFSelfSet,
+    TON_Time_Compressor := PowerOnDelay_Compressor,
+    TON_Time_Valve := PowerOnDelay_Valve,
+    OperatingMode := AutomaticMode
+);
+MotorControl_PD01_Compressor := SST_PD01_InitDrive.DigitalOutputControl_01;
+SST_PD02_InitDrive(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := ESS,
+    Destination := DestinationHorizontal,
+    InitStateDrive_Input := InputInitialStateDrive,
+    DI01 := ,
+    DI02 := ,
+    DI03_EncoderStart01 := ,
+    DI04_EncoderStart02 := ,
+    DI05_EncoderStart03 := ,
+    DI06_EncoderStart04 := ,
+    DI07_EncoderStart05 := ,
+    DI08_EncoderStart06 := ,
+    DI09_EncoderTarget01 := ,
+    DI10_EncoderTarget02 := ,
+    DI11_EncoderTarget03 := ,
+    DI12_EncoderTarget04 := ,
+    DI13_EncoderTarget05 := ,
+    DI14_EncoderTarget06 := ,
+    PowerOFF_SelfSet := PowerOfF_SelfSet,
+    TON_Time_PowerOFFSelfSet := TON_Time_PowerOFFSelfSet,
+    TON_Time_Compressor := PowerOnDelay_Compressor,
+    TON_Time_Valve := PowerOnDelay_Valve,
+    OperatingMode := AutomaticMode
+);
+MotorControl_PD02_Compressor := SST_PD02_InitDrive.DigitalOutputControl_01;
+SST_PD03_InitDrive(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := ESS,
+    Destination := DestinationHorizontal,
+    InitStateDrive_Input := InputInitialStateDrive,
+    DI01 := ,
+    DI02 := ,
+    DI03_EncoderStart01 := ,
+    DI04_EncoderStart02 := ,
+    DI05_EncoderStart03 := ,
+    DI06_EncoderStart04 := ,
+    DI07_EncoderStart05 := ,
+    DI08_EncoderStart06 := ,
+    DI09_EncoderTarget01 := ,
+    DI10_EncoderTarget02 := ,
+    DI11_EncoderTarget03 := ,
+    DI12_EncoderTarget04 := ,
+    DI13_EncoderTarget05 := ,
+    DI14_EncoderTarget06 := ,
+    PowerOFF_SelfSet := PowerOfF_SelfSet,
+    TON_Time_PowerOFFSelfSet := TON_Time_PowerOFFSelfSet,
+    TON_Time_Compressor := PowerOnDelay_Compressor,
+    TON_Time_Valve := PowerOnDelay_Valve,
+    OperatingMode := AutomaticMode
+);
+MotorControl_PD03_Compressor := SST_PD03_InitDrive.DigitalOutputControl_01;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

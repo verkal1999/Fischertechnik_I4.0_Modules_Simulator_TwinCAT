@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="SST_ControlOfOutputs" Id="{c8a32b4b-dcc9-4c17-bc1f-328671decc42}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK SST_ControlOfOutputs
+VAR_INPUT
+	F4							: BOOL;
+	F1							: BOOL;
+	A2							: BOOL;
+	A1							: BOOL;
+	A6							: BOOL;
+	Start						: BOOL;	
+//Variablen zur Outputsteuerung aus anderen FBs
+	//Output-Variablen der Komponente ConveyorBelt	
+	CB_MoveForwardToPD01: BOOL;
+	CB_MoveForwardToPD02: BOOL;
+	CB_MoveForwardToPD03: BOOL;
+	CB_MoveForwardTillEnd: BOOL;
+	
+	//Output-Variablen der Komponente PushingDevice
+	PD01_Compressor : BOOL;
+	PD02_Compressor : BOOL;
+	PD03_Compressor : BOOL;
+	PD01_Valve : BOOL;
+	PD02_Valve : BOOL;
+	PD03_Valve : BOOL;	
+	
+	//Output-Variablen für Init-Fahrt
+	Init_PD01_Compressor : BOOL;
+	Init_PD02_Compressor : BOOL;
+	Init_PD03_Compressor : BOOL;
+	Init_PD01_Valve : BOOL;
+	Init_PD02_Valve : BOOL;
+	Init_PD03_Valve : BOOL;
+
+END_VAR
+VAR_OUTPUT
+	ConveyorBeltForward : BOOL;
+	CompressorON : BOOL;
+	ValvePD01_ON : BOOL;
+	ValvePD02_ON : BOOL;
+	ValvePD03_ON : BOOL;
+	Light_Q1: BOOL;
+	Light_Q2: BOOL;
+	Light_Q3: BOOL;
+	
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ConveyorBeltForward := ((((((F1) OR (A2))) AND (((CB_MoveForwardToPD01) OR (CB_MoveForwardToPD02) OR (CB_MoveForwardToPD03) OR (CB_MoveForwardTillEnd))))) OR (((Start) AND (F4))));
+CompressorON := ((((((F1) OR (A2))) AND (((PD01_Compressor) OR (PD02_Compressor) OR (PD03_Compressor) OR (Init_PD01_Compressor) OR (Init_PD02_Compressor) OR (Init_PD03_Compressor))))) OR (((Start) AND (F4))));
+ValvePD01_ON := ((((((F1) OR (A2))) AND (((PD01_Valve) OR (Init_PD01_Valve))))) OR (((Start) AND (F4))));
+ValvePD02_ON := ((((((F1) OR (A2))) AND (((PD02_Valve) OR (Init_PD02_Valve))))) OR (((Start) AND (F4))));
+ValvePD03_ON := ((((((F1) OR (A2))) AND (((PD03_Valve) OR (Init_PD03_Valve))))) OR (((Start) AND (F4))));
+Light_Q1 := F1;
+Light_Q2 := F4;
+Light_Q3 := A1;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

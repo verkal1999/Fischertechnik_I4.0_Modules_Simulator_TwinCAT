@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="MBS_MR01_InitialStateDrive" Id="{49bf03f5-fed7-4b5e-8db2-95f123cc4819}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK MBS_MR01_InitialStateDrive
+VAR_INPUT
+	MethodCall_InitDrive : BOOL;
+	ESS : BOOL;
+	InputInitStateDrive : BOOL;
+	TouchSensor01 : BOOL;
+	TouchSensor02 : BOOL;
+	InitDriveMode : BOOL;
+END_VAR
+VAR_OUTPUT
+	MotorControlHorizontalForwards : BOOL;
+	MotorControlHorizontalBackwards : BOOL;
+	ResetMethodCallInitDriveMR01_Backwards : BOOL;
+	ResetMethodCallInitDriveMR01_Forwards : BOOL;
+END_VAR
+VAR
+	DirectionHorizontal : STRING;
+	
+	MBS_MR01_InitDrive_HorizontalForwards: AxisControl_MultipleInputSensors;
+	MBS_MR01_InitDrive_HorizontalBackwards: AxisControl_MultipleInputSensors;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[MBS_MR01_InitDrive_HorizontalBackwards(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := ESS,
+    Direction := DirectionHorizontal,
+    InitStateDrive_Input := InputInitStateDrive,
+    DI01 := ,
+    DI02 := TouchSensor01,
+    TouchSensorRelief := ,
+    TOF_Time_MotorControl := ,
+    TOF_Time_TouchSensorRelief := ,
+    OperatingMode := InitDriveMode
+);
+MotorControlHorizontalBackwards := MBS_MR01_InitDrive_HorizontalBackwards.DigitalOutputControl_01;
+MBS_MR01_InitDrive_HorizontalForwards(
+    MethodCall := MethodCall_InitDrive,
+    EmergencyStopSignal := ESS,
+    Direction := DirectionHorizontal,
+    InitStateDrive_Input := ,
+    DI01 := TouchSensor01,
+    DI02 := TouchSensor02,
+    TouchSensorRelief := ,
+    TOF_Time_MotorControl := ,
+    TOF_Time_TouchSensorRelief := ,
+    OperatingMode := InitDriveMode
+);
+MotorControlHorizontalForwards := MBS_MR01_InitDrive_HorizontalForwards.DigitalOutputControl_01;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

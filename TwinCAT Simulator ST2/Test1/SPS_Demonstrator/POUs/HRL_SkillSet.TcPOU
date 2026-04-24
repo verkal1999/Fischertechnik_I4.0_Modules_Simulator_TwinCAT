@@ -1,0 +1,381 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
+  <POU Name="HRL_SkillSet" Id="{fdd7d3b6-0022-4282-b8b6-2965ae17a30d}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM HRL_SkillSet
+VAR
+//Hochregallager Skillset	
+	//HRL CombinedSkill_Auslagerung
+	{attribute 'OPC.UA.DA':= '1'}
+	HRL_NMethod_Auslagern : HRL_NMethod_Auslagern;
+	bAuslagernAktiv : BOOL := FALSE;
+	//HRL Conveyorbelt Skills
+	{attribute 'OPC.UA.DA':= '1'}
+	HRL_Skill_CB_MoveForwards: HRL_CB_AS_HorizontalMoveSensors; //Movement to Store-Out some goods on the Conveyorbelt
+	{attribute 'OPC.UA.DA':= '1'}
+	HRL_Skill_CB_MoveBackwards : HRL_CB_AS_HorizontalMoveSensors; //Movement to Store-In some goods on the Conveyorbelt
+	
+	//HRL RGB Skills
+	{attribute 'OPC.UA.DA':= '1'}
+	HRL_Skill_RGB_MoveBackwards : HRL_RGB_AS_HorizontalMoveSensors;	
+	{attribute 'OPC.UA.DA':= '1'}
+	HRL_Skill_RGB_MoveForwards : HRL_RGB_AS_HorizontalMoveSensors;	
+	{attribute 'OPC.UA.DA':= '1'}
+	HRL_Skill_RGB_MoveVerticalForwards : HRL_RGB_AS_VerticalMoveEncoders;	
+	{attribute 'OPC.UA.DA':= '1'}
+	HRL_Skill_RGB_MoveVerticalBackwards : HRL_RGB_AS_VerticalMoveEncoders;
+	{attribute 'OPC.UA.DA':= '1'}
+	HRL_Skill_RGB_MoveHorizontalForwards : HRL_RGB_AS_HorizontalMoveEncoders;	
+	{attribute 'OPC.UA.DA':= '1'}
+	HRL_Skill_RGB_MoveHorizontalBackwards : HRL_RGB_AS_HorizontalMoveEncoders;
+	
+	//Organisation FBs
+	HRL_ControlOfOutputs : HRL_ControlOfOutputs;
+	HRL_OperatingModes : HRL_OperatingModes;
+	HRL_DiagnosisHandler : HRL_DiagnosisHandler;
+	bAuslagernTrackingLatched : BOOL := FALSE;
+	
+	//InitialStateDrives
+	HRL_RGB_InitialStateDrive : HRL_RGB_InitialStateDrive;
+	
+	
+//Variablen zur Outputsteuerung
+	HRL_CB_forwards : BOOL; //GVL_HRL.HRL_MOT_Foerderband_vorwaerts
+	HRL_CB_backwards : BOOL; //GVL_HRL.HRL_MOT_Foerderband_rueckwaerts
+	HRL_RGB_Forwards01 : BOOL; //GVL_HRL.HRL_MOT_Ausleger_vorwaerts
+	HRL_RGB_Forwards02 : BOOL; //GVL_HRL.HRL_MOT_Ausleger_vorwaerts
+	HRL_RGB_Backwards01 : BOOL; //GVL_HRL.HRL_MOT_Ausleger_rueckwaerts
+	HRL_RGB_Backwards02 : BOOL; //GVL_HRL.HRL_MOT_Ausleger_rueckwaerts	
+	HRL_RGB_VertikalDown01 : BOOL; //GVL_HRL.HRL_MOT_vertikal_runter		
+	HRL_RGB_VertikalDown02 : BOOL; //GVL_HRL.HRL_MOT_vertikal_runter
+	HRL_RGB_VertikalUp01 : BOOL; //GVL_HRL.HRL_MOT_vertikal_hoch
+	HRL_RGB_VertikalUp02 : BOOL; //GVL_HRL.HRL_MOT_vertikal_hoch
+	HRL_RGB_HorizontalForwards01 : BOOL; //GVL_HRL.HRL_MOT_horizontal_zum_Regal	
+	HRL_RGB_HorizontalForwards02 : BOOL; //GVL_HRL.HRL_MOT_horizontal_zum_Regal	
+	HRL_RGB_HorizontalBackwards01 : BOOL; //GVL_HRL.HRL_MOT_horizontal_zum_Foerderband
+	HRL_RGB_HorizontalBackwards02 : BOOL; //GVL_HRL.HRL_MOT_horizontal_zum_Foerderband
+//OutputVariablen für Init-Fahrt	
+	Init_SRM_MotorBackwards : BOOL;
+	Init_SRM_MotorForwards : BOOL;
+	Init_RGB_VerticalUp : BOOL;
+	Init_RGB_VerticalDown : BOOL;
+	Init_RGB_HorizontalForwards : BOOL;
+	Init_RGB_HorizontalBackwards : BOOL;
+	
+//Time Constraints
+	TIME_TSR : TIME := T#150MS;
+//Encoder Values for InitialStateDrive
+	HRL_RGB_ET_Vertical01 : UDINT;
+	HRL_RGB_ET_Vertical02 : UDINT;
+	HRL_RGB_ET_Horizontall01 : UDINT;
+	HRL_RGB_ET_Horizontall02 : UDINT;
+	
+	//GEMMA_Mappings
+	sCurrentGemmaState : STRING(80) := '';
+    sLastNonFailureGemmaState : STRING(80) := '';
+    rtD2 : R_TRIG;
+END_VAR
+
+VAR_INPUT
+	//Variablensetzung: Sollte später über SkillOA eingesetzt werden ODER Hard in SPS codiert (Diskussionspunkt)
+	ResetButton: BOOL;
+	StartButton: BOOL;
+	ConfirmationButton: BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* === Simulations-Override *)
+IF GVL_Sim.bSimMode THEN
+    GVL.diNotAus_Kanal_A                  := GVL_Sim.diNotAus_Kanal_A;
+    GVL.diNotAus_Kanal_B                  := GVL_Sim.diNotAus_Kanal_B;
+    GVL_HRL.HRL_Enc_horizontal_I1          := GVL_HRL_Sim.HRL_Enc_horizontal_I1;
+    GVL_HRL.HRL_Enc_horizontal_I2          := GVL_HRL_Sim.HRL_Enc_horizontal_I2;
+    GVL_HRL.HRL_Enc_vertikal_I1            := GVL_HRL_Sim.HRL_Enc_vertikal_I1;
+    GVL_HRL.HRL_Enc_vertikal_I2            := GVL_HRL_Sim.HRL_Enc_vertikal_I2;
+    // GVL_HRL - Digitaleingänge (BOOL)
+    GVL_HRL.HRL_Ref_Taster_horizontal      := GVL_HRL_Sim.HRL_Ref_Taster_horizontal;
+    GVL_HRL.HRL_LS_innen                   := GVL_HRL_Sim.HRL_LS_innen;
+    GVL_HRL.HRL_LS_aussen                  := GVL_HRL_Sim.HRL_LS_aussen;
+    GVL_HRL.HRL_Ref_Taster_vertikal        := GVL_HRL_Sim.HRL_Ref_Taster_vertikal;
+    GVL_HRL.HRL_Spursensor_1_unten         := GVL_HRL_Sim.HRL_Spursensor_1_unten;
+    GVL_HRL.HRL_Spursensor_2_oben          := GVL_HRL_Sim.HRL_Spursensor_2_oben;
+    GVL_HRL.HRL_Ref_Taster_Ausleger_vorne  := GVL_HRL_Sim.HRL_Ref_Taster_Ausleger_vorne;
+    GVL_HRL.HRL_Ref_Taster_Ausleger_hinten := GVL_HRL_Sim.HRL_Ref_Taster_Ausleger_hinten;
+END_IF
+(* ============================================================================= *)
+HRL_OperatingModes(
+    Start := StartButton,
+    Stop := NOT (((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B))),
+    Reset := ResetButton,
+    Schalter := ConfirmationButton,
+    Schrittkette_GS := ((HRL_RGB_InitialStateDrive.ResetMethodCall_SRM) AND (HRL_RGB_InitialStateDrive.ResetMethodCall_RGB_Horizontal) AND (HRL_RGB_InitialStateDrive.ResetMethodCall_RGB_Vertical)),
+    Count1 := HRL_RGB_InitialStateDrive.Count_SRM_MotorBackw,
+    Count2 := HRL_RGB_InitialStateDrive.Count_SRM_MotorForw,
+    Alt_abort := OPCUA.Alt_abort,
+    Err_detected := HRL_DiagnosisHandler.Err_detected,
+    Diag_finished := HRL_DiagnosisHandler.Diag_finished,
+    Alt_found := HRL_DiagnosisHandler.Alt_found,
+    Cycle_finished := OPCUA.Cycle_finished
+);
+
+
+HRL_NMethod_Auslagern(
+    ESS_OK := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    AutomaticMode := HRL_OperatingModes.F1,
+
+    HRL_Enc_horizontal_I1 := GVL_HRL.HRL_Enc_horizontal_I1,
+    HRL_Enc_horizontal_I2 := GVL_HRL.HRL_Enc_horizontal_I2,
+    HRL_Enc_vertikal_I1 := GVL_HRL.HRL_Enc_vertikal_I1,
+    HRL_Enc_vertikal_I2 := GVL_HRL.HRL_Enc_vertikal_I2,
+
+    HRL_Ref_Taster_horizontal := GVL_HRL.HRL_Ref_Taster_horizontal,
+    HRL_Ref_Taster_vertikal := GVL_HRL.HRL_Ref_Taster_vertikal,
+    HRL_Ref_Taster_Ausleger_vorne := GVL_HRL.HRL_Ref_Taster_Ausleger_vorne,
+    HRL_Ref_Taster_Ausleger_hinten := GVL_HRL.HRL_Ref_Taster_Ausleger_hinten,
+
+    HRL_LS_innen := GVL_HRL.HRL_LS_innen,
+    HRL_LS_aussen := GVL_HRL.HRL_LS_aussen
+);
+
+HRL_DiagnosisHandler(
+    Diagnose_gefordert := HRL_OperatingModes.D2,
+    ErrorDetectedRaw := HRL_NMethod_Auslagern.Error,
+    Reset := ResetButton
+);
+
+HRL_RGB_InitialStateDrive(
+    MethodCall_InitDrive := HRL_OperatingModes.MethodCall_InitStateDrive,
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    InputInitDriveMode := HRL_OperatingModes.InputVar_InitStateDrive,
+    TouchSensor01_SRM := GVL_HRL.HRL_Ref_Taster_Ausleger_hinten,
+    TouchSensor02_RGB_vertical := GVL_HRL.HRL_Ref_Taster_vertikal,
+    TouchSensor03_RGB_horizontal := GVL_HRL.HRL_Ref_Taster_horizontal,
+    TOF_Time_TSR := TIME_TSR,
+    InitDriveMode := HRL_OperatingModes.A6
+);
+Init_SRM_MotorBackwards := HRL_RGB_InitialStateDrive.SRM_MotorBackwards;
+HRL_Skill_CB_MoveForwards(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    LightBarrierSensor_01 := GVL_HRL.HRL_LS_innen,
+    LightBarrierSensor_02 := GVL_HRL.HRL_LS_aussen,
+    AutomaticMode := HRL_OperatingModes.F1
+);
+HRL_CB_forwards := HRL_Skill_CB_MoveForwards.DO_MovingConveyorBelt;
+HRL_Skill_CB_MoveBackwards(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    LightBarrierSensor_01 := GVL_HRL.HRL_LS_aussen,
+    LightBarrierSensor_02 := GVL_HRL.HRL_LS_innen,
+    AutomaticMode := HRL_OperatingModes.F1
+);
+HRL_CB_backwards := HRL_Skill_CB_MoveBackwards.DO_MovingConveyorBelt;
+HRL_Skill_RGB_MoveForwards(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor01 := GVL_HRL.HRL_Ref_Taster_Ausleger_hinten,
+    TouchSensor02 := GVL_HRL.HRL_Ref_Taster_Ausleger_vorne,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticMode := HRL_OperatingModes.F1
+);
+HRL_RGB_Forwards01 := HRL_Skill_RGB_MoveForwards.DO_MovingHorizontalRGB_01;
+HRL_Skill_RGB_MoveBackwards(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor01 := GVL_HRL.HRL_Ref_Taster_Ausleger_vorne,
+    TouchSensor02 := GVL_HRL.HRL_Ref_Taster_Ausleger_hinten,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticMode := HRL_OperatingModes.F1
+);
+HRL_RGB_Backwards01 := HRL_Skill_RGB_MoveBackwards.DO_MovingHorizontalRGB_01;
+HRL_Skill_RGB_MoveVerticalForwards(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor01 := GVL_HRL.HRL_Ref_Taster_vertikal,
+    EncoderStartPosition01 := GVL_HRL.HRL_Enc_vertikal_I1,
+    EncoderStartPosition02 := GVL_HRL.HRL_Enc_vertikal_I2,
+    TOF_TSR_TIME := TIME_TSR,
+    AutomaticMode := HRL_OperatingModes.F1
+);
+HRL_RGB_VertikalDown01 := HRL_Skill_RGB_MoveVerticalForwards.DO_MovingVerticalRGB_01;
+HRL_Skill_RGB_MoveVerticalBackwards(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor01 := GVL_HRL.HRL_Ref_Taster_vertikal,
+    EncoderStartPosition01 := GVL_HRL.HRL_Enc_vertikal_I1,
+    EncoderStartPosition02 := GVL_HRL.HRL_Enc_vertikal_I2,
+    TOF_TSR_TIME := TIME_TSR,
+    AutomaticMode := HRL_OperatingModes.F1
+);
+HRL_RGB_VertikalUp02 := HRL_Skill_RGB_MoveVerticalBackwards.DO_MovingVerticalRGB_01;
+HRL_Skill_RGB_MoveHorizontalForwards(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor01 := GVL_HRL.HRL_Ref_Taster_horizontal,
+    EncoderStartPosition01 := GVL_HRL.HRL_Enc_horizontal_I1,
+    EncoderStartPosition02 := GVL_HRL.HRL_Enc_horizontal_I2,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticMode := HRL_OperatingModes.F1
+);
+HRL_RGB_HorizontalForwards01 := HRL_Skill_RGB_MoveHorizontalForwards.DO_MovingHorizontalRGB_01;
+HRL_Skill_RGB_MoveHorizontalBackwards(
+    ESS := ((GVL.diNotAus_Kanal_A) AND (GVL.diNotAus_Kanal_B)),
+    TouchSensor01 := GVL_HRL.HRL_Ref_Taster_horizontal,
+    EncoderStartPosition01 := GVL_HRL.HRL_Enc_horizontal_I1,
+    EncoderStartPosition02 := GVL_HRL.HRL_Enc_horizontal_I2,
+    TOF_Time_TSR := TIME_TSR,
+    AutomaticMode := HRL_OperatingModes.F1
+);
+HRL_RGB_HorizontalBackwards02 := HRL_Skill_RGB_MoveHorizontalBackwards.DO_MovingHorizontalRGB_01;
+
+bAuslagernAktiv := HRL_NMethod_Auslagern.Busy OR (HRL_NMethod_Auslagern.CurrentStep <> 0);;
+
+HRL_ControlOfOutputs(
+    F4 := HRL_OperatingModes.F4,
+    F1 := HRL_OperatingModes.F1,
+    A2 := HRL_OperatingModes.A2,
+    A1 := HRL_OperatingModes.A1,
+    A6 := HRL_OperatingModes.A6,
+    Start := HRL_OperatingModes.Start,
+
+    CB_forwards :=
+        (HRL_CB_forwards AND NOT bAuslagernAktiv)
+        OR HRL_NMethod_Auslagern.REQ_CB_forwards,
+
+    CB_backwards :=
+        (HRL_CB_backwards AND NOT bAuslagernAktiv)
+        OR HRL_NMethod_Auslagern.REQ_CB_backwards,
+
+    RGB_Forwards01 :=
+        (HRL_RGB_Forwards01 AND NOT bAuslagernAktiv)
+        OR HRL_NMethod_Auslagern.REQ_RGB_Forwards,
+
+    RGB_Forwards02 :=
+        HRL_RGB_Forwards02 AND NOT bAuslagernAktiv,
+
+    RGB_Backwards01 :=
+        (HRL_RGB_Backwards01 AND NOT bAuslagernAktiv)
+        OR HRL_NMethod_Auslagern.REQ_RGB_Backwards,
+
+    RGB_Backwards02 :=
+        HRL_RGB_Backwards02 AND NOT bAuslagernAktiv,
+
+    RGB_VertikalDown01 :=
+        (HRL_RGB_VertikalDown01 AND NOT bAuslagernAktiv)
+        OR HRL_NMethod_Auslagern.REQ_RGB_VerticalDown,
+
+    RGB_VertikalDown02 :=
+        HRL_RGB_VertikalDown02 AND NOT bAuslagernAktiv,
+
+    RGB_VertikalUp01 :=
+        (HRL_RGB_VertikalUp01 AND NOT bAuslagernAktiv)
+        OR HRL_NMethod_Auslagern.REQ_RGB_VerticalUp,
+
+    RGB_VertikalUp02 :=
+        HRL_RGB_VertikalUp02 AND NOT bAuslagernAktiv,
+
+    RGB_HorizontalForwards01 :=
+        (HRL_RGB_HorizontalForwards01 AND NOT bAuslagernAktiv)
+        OR HRL_NMethod_Auslagern.REQ_RGB_HorizontalForward,
+
+    RGB_HorizontalForwards02 :=
+        HRL_RGB_HorizontalForwards02 AND NOT bAuslagernAktiv,
+
+    RGB_HorizontalBackwards01 :=
+        (HRL_RGB_HorizontalBackwards01 AND NOT bAuslagernAktiv)
+        OR HRL_NMethod_Auslagern.REQ_RGB_HorizontalBackward,
+
+    RGB_HorizontalBackwards02 :=
+        HRL_RGB_HorizontalBackwards02 AND NOT bAuslagernAktiv,
+
+    Init_RGB_Forwards := Init_SRM_MotorForwards,
+    Init_RGB_Backwards := Init_SRM_MotorBackwards,
+    Init_RGB_VertikalUp := Init_RGB_VerticalUp,
+    Init_RGB_VertikalDown := Init_RGB_VerticalDown,
+    Init_RGB_HorizontalForwads := Init_RGB_HorizontalForwards,
+    Init_RGB_HorizontalBackwards := Init_RGB_HorizontalBackwards
+);
+IF GVL_Sim.bSimMode THEN
+
+    // Outputs in Simulationsabbild schreiben
+    GVL_HRL_Sim.HRL_MOT_Foerderband_vorwaerts :=
+        HRL_ControlOfOutputs.ConveyorBeltForward;
+
+    GVL_HRL_Sim.HRL_MOT_Foerderband_rueckwaerts :=
+        HRL_ControlOfOutputs.ConveyorBeltBackward;
+
+    GVL_HRL_Sim.HRL_MOT_Ausleger_vorwaerts :=
+        HRL_ControlOfOutputs.RGB_Forwards;
+
+    GVL_HRL_Sim.HRL_MOT_Ausleger_rueckwaerts :=
+        HRL_ControlOfOutputs.RGB_Backwards;
+
+    GVL_HRL_Sim.HRL_MOT_vertikal_runter :=
+        HRL_ControlOfOutputs.RGB_VerticalDown;
+
+    GVL_HRL_Sim.HRL_MOT_vertikal_hoch :=
+        HRL_ControlOfOutputs.RGB_VerticalUp;
+
+    GVL_HRL_Sim.HRL_MOT_horizontal_zum_Regal :=
+        HRL_ControlOfOutputs.RGB_HorizontalForward;
+
+    GVL_HRL_Sim.HRL_MOT_horizontal_zum_Foerderband :=
+        HRL_ControlOfOutputs.RGB_HorizontalBackward;
+
+    GVL_HRL_Sim.HRL_K1_1_Zaehler_Zuruecksetzen :=
+        GVL_HRL.HRL_K1_1_Zaehler_Zuruecksetzen;
+
+    GVL_HRL_Sim.HRL_K1_2_Zaehler_Zuruecksetzen :=
+        GVL_HRL.HRL_K1_2_Zaehler_Zuruecksetzen;
+
+ELSE
+
+    // Outputs auf reale Hardware schreiben
+    GVL_HRL.HRL_MOT_Foerderband_vorwaerts :=
+        HRL_ControlOfOutputs.ConveyorBeltForward;
+
+    GVL_HRL.HRL_MOT_Foerderband_rueckwaerts :=
+        HRL_ControlOfOutputs.ConveyorBeltBackward;
+
+    GVL_HRL.HRL_MOT_Ausleger_vorwaerts :=
+        HRL_ControlOfOutputs.RGB_Forwards;
+
+    GVL_HRL.HRL_MOT_Ausleger_rueckwaerts :=
+        HRL_ControlOfOutputs.RGB_Backwards;
+
+    GVL_HRL.HRL_MOT_vertikal_runter :=
+        HRL_ControlOfOutputs.RGB_VerticalDown;
+
+    GVL_HRL.HRL_MOT_vertikal_hoch :=
+        HRL_ControlOfOutputs.RGB_VerticalUp;
+
+    GVL_HRL.HRL_MOT_horizontal_zum_Regal :=
+        HRL_ControlOfOutputs.RGB_HorizontalForward;
+
+    GVL_HRL.HRL_MOT_horizontal_zum_Foerderband :=
+        HRL_ControlOfOutputs.RGB_HorizontalBackward;
+
+END_IF;
+
+//GEMMA-Mappings
+IF HRL_OperatingModes.A1 THEN
+    sCurrentGemmaState := 'HRL_OperatingModes.A1';
+ELSIF HRL_OperatingModes.A2 THEN
+    sCurrentGemmaState := 'HRL_OperatingModes.A2';
+ELSIF HRL_OperatingModes.A5 THEN
+    sCurrentGemmaState := 'HRL_OperatingModes.A5';
+ELSIF HRL_OperatingModes.A6 THEN
+    sCurrentGemmaState := 'HRL_OperatingModes.A6';
+ELSIF HRL_OperatingModes.F1 THEN
+    sCurrentGemmaState := 'HRL_OperatingModes.F1';
+ELSIF HRL_OperatingModes.F4 THEN
+    sCurrentGemmaState := 'HRL_OperatingModes.F4';
+ELSIF HRL_OperatingModes.D1 THEN
+    sCurrentGemmaState := 'HRL_OperatingModes.D1';
+ELSIF HRL_OperatingModes.D3 THEN
+    sCurrentGemmaState := 'HRL_OperatingModes.D3';
+END_IF;
+
+IF NOT HRL_OperatingModes.D2 THEN
+    sLastNonFailureGemmaState := sCurrentGemmaState;
+END_IF;
+
+rtD2(CLK := HRL_OperatingModes.D2);
+
+IF rtD2.Q THEN
+    OPCUA.LastGEMMAStateBeforeFailure := sLastNonFailureGemmaState;
+END_IF;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
