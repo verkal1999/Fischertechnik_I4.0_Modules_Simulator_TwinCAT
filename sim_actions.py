@@ -15,7 +15,6 @@ LogCallback = Callable[[str], None]
 def _noop(msg: str) -> None:
     pass
 
-
 def _make_sps() -> SPS_Simulator:
     return SPS_Simulator()
 
