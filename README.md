@@ -7,11 +7,13 @@ thesis and was used together with the Manufacturing ExcH Agents project:
 https://github.com/verkal1999/Manufacturing-ExcH-Agents
 
 The simulator supports an application example in which an agent-based error
-handling workflow is evaluated on a high-bay warehouse module. The original
+handling workflow is evaluated on a high-bay warehouse module (Hochregallager). The original
 setup is based on the Fischertechnik 24 V factory simulation and a Beckhoff
 TwinCAT PLC program. Because a laboratory test on the physical PLC setup was
 affected by a PLC-related issue, this repository provides a simulation layer for
 the PLC-side signals and skill execution flow.
+
+![High-bay warehouse module](assets/HRL.svg)
 
 ## Purpose
 
@@ -137,3 +139,15 @@ This implementation was developed as part of a master's thesis. Its purpose is
 to support the evaluation of an agent-based error handling approach for modular
 manufacturing systems using a reproducible simulation of a Fischertechnik
 high-bay warehouse scenario.
+
+## License
+
+Unless otherwise noted, the author's own source code, documentation, simulation
+logic, and TwinCAT project files in this repository are licensed under the MIT
+License.
+
+Third-party software, tools, libraries, trademarks, and generated artifacts
+remain subject to their respective license terms. Beckhoff TwinCAT itself,
+Beckhoff-provided libraries, and other Beckhoff software components are not
+licensed under this repository's MIT License and must be used under the
+applicable Beckhoff license terms.
