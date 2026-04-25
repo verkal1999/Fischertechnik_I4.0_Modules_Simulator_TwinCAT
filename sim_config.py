@@ -26,7 +26,6 @@ SENSOR_LABELS = {
     "diag_finished": "OPC UA Diag_finished",
     "VSG_SkillSet.VSG_DiagnosisHandler.Diag_finished": "VSG Diagnosehandler Diag_finished",
 }
-
 OPC_CONFIG = OpcUaConnectionConfig(
     username="AdminVD",
     password="123456",
