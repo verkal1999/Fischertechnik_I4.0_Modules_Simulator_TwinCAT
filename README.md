@@ -96,13 +96,119 @@ classify the fault.
 - `TwinCAT Simulator ST2/` contains exported TwinCAT-related simulation and
   mapping data.
 
+## Python Environment
+
+The simulator was restored and verified with Python 3.12.1 on Windows. Create a
+local virtual environment in the repository root and install the runtime
+packages with:
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install streamlit pyads opcua cryptography ipykernel
+```
+
+The directly used Python packages are:
+
+- `streamlit` for the operator interface
+- `pyads` for TwinCAT ADS access
+- `opcua` for OPC UA client communication
+- `cryptography` for OPC UA client certificates
+- `ipykernel` for the included notebooks
+
+The following package set was exported from the current `.venv` with
+`pip freeze`:
+
+<details>
+<summary>Exact Python dependencies</summary>
+
+```text
+altair==6.1.0
+anyio==4.13.0
+asttokens==3.0.1
+attrs==26.1.0
+blinker==1.9.0
+cachetools==7.0.6
+certifi==2026.4.22
+cffi==2.0.0
+charset-normalizer==3.4.7
+click==8.3.3
+colorama==0.4.6
+comm==0.2.3
+cryptography==47.0.0
+debugpy==1.8.20
+decorator==5.2.1
+executing==2.2.1
+gitdb==4.0.12
+GitPython==3.1.49
+h11==0.16.0
+httptools==0.7.1
+idna==3.13
+ipykernel==7.2.0
+ipython==9.13.0
+ipython_pygments_lexers==1.1.1
+itsdangerous==2.2.0
+jedi==0.19.2
+Jinja2==3.1.6
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+jupyter_client==8.8.0
+jupyter_core==5.9.1
+lxml==6.1.0
+MarkupSafe==3.0.3
+matplotlib-inline==0.2.1
+narwhals==2.20.0
+nest-asyncio==1.6.0
+numpy==2.4.4
+opcua==0.98.13
+packaging==26.2
+pandas==3.0.2
+parso==0.8.6
+pillow==12.2.0
+platformdirs==4.9.6
+prompt_toolkit==3.0.52
+protobuf==7.34.1
+psutil==7.2.2
+pure_eval==0.2.3
+pyads==3.5.2
+pyarrow==24.0.0
+pycparser==3.0
+pydeck==0.9.2
+Pygments==2.20.0
+python-dateutil==2.9.0.post0
+python-multipart==0.0.27
+pytz==2026.1.post1
+pyzmq==27.1.0
+referencing==0.37.0
+requests==2.33.1
+rpds-py==0.30.0
+six==1.17.0
+smmap==5.0.3
+stack-data==0.6.3
+starlette==1.0.0
+streamlit==1.57.0
+tenacity==9.1.4
+toml==0.10.2
+tornado==6.5.5
+traitlets==5.14.3
+typing_extensions==4.15.0
+tzdata==2026.2
+urllib3==2.6.3
+uvicorn==0.46.0
+watchdog==6.0.0
+wcwidth==0.6.0
+websockets==16.0
+```
+
+</details>
+
 ## Running the UI
 
 Install the required Python packages in your environment, then start the
 Streamlit interface from the repository root:
 
 ```powershell
-streamlit run app.py
+.\.venv\Scripts\streamlit.exe run app.py
 ```
 
 The default configuration expects a reachable TwinCAT runtime and OPC UA server
