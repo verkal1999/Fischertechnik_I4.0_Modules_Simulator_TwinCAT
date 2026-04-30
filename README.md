@@ -110,6 +110,15 @@ matching the symbols and endpoint configured in `sim_config.py` and
 `Simulation.py`. Certificates for secure OPC UA communication are expected in
 the `certs/` directory.
 
+The Streamlit frontend provides a top-view visualization of the simulated
+high-bay warehouse scenario. It shows the rack, rack-serving unit, conveyor,
+VSG pickup area, current SPS-bound state values, sensor states, actuator states,
+and encoder/step values. During the fault scenario, the workpiece is shown at
+the outer conveyor light barrier before it is removed and the VSG skill detects
+the missing workpiece.
+
+![Streamlit frontend showing the simulated HRL, conveyor, VSG state, and SPS values](assets/Screenshot_UI.png)
+
 ## Typical Workflow
 
 1. Prepare the TwinCAT PLC runtime and enable simulation mode.
