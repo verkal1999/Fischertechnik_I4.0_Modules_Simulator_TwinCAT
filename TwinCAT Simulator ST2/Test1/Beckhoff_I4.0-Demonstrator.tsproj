@@ -71,69 +71,11 @@
 		</System>
 		<Plc>
 			<Project GUID="{2745F7E2-6D23-44E8-9C5A-E044B429327F}" Name="SPS_Demonstrator" PrjFilePath="SPS_Demonstrator\SPS_Demonstrator.plcproj" TmcFilePath="SPS_Demonstrator\SPS_Demonstrator.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" CopyTmcToTarget="true" CopyTpyToTarget="false" SymbolicMapping="true">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{588EBD82-6F93-AA30-52E6-50B6C02C02E5}" TmcPath="SPS_Demonstrator\SPS_Demonstrator.tmc">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcHash="{35A66E2E-3E0C-5B3E-945B-33C1E5075991}" TmcPath="SPS_Demonstrator\SPS_Demonstrator.tmc">
 					<Name>SPS_Demonstrator Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Vars VarGrpType="2" AreaNo="1">
 						<Name>PlcTask Outputs</Name>
-						<Var>
-							<Name>GVL_HRL.HRL_MOT_Foerderband_vorwaerts</Name>
-							<Comment><![CDATA[ xDO%111.0_A2_2	
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_MOT_Foerderband_rueckwaerts</Name>
-							<Comment><![CDATA[ xDO%111.1_A2_2
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_MOT_horizontal_zum_Regal</Name>
-							<Comment><![CDATA[ xDO%111.2_A2_4
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_MOT_horizontal_zum_Foerderband</Name>
-							<Comment><![CDATA[ xDO%111.3_A2_4
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_MOT_vertikal_runter</Name>
-							<Comment><![CDATA[ xDO%111.4_A2_4
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_MOT_vertikal_hoch</Name>
-							<Comment><![CDATA[ xDO%111.5_A2_4
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_MOT_Ausleger_vorwaerts</Name>
-							<Comment><![CDATA[ xDO%111.6_A2_4
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_MOT_Ausleger_rueckwaerts</Name>
-							<Comment><![CDATA[ xDO%111.7_A2_4
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_K1_1_Zaehler_Zuruecksetzen</Name>
-							<Comment><![CDATA[ für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_K1_2_Zaehler_Zuruecksetzen</Name>
-							<Comment><![CDATA[ für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
 						<Var>
 							<Name>GVL_MBS.MBS_MOT_DK_CW</Name>
 							<Comment><![CDATA[ xDO%112.0_A3_4]]></Comment>
@@ -293,6 +235,64 @@
 							<Comment><![CDATA[ für OPC UA freigeben]]></Comment>
 							<Type>BOOL</Type>
 						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_MOT_Foerderband_vorwaerts</Name>
+							<Comment><![CDATA[ xDO%111.0_A2_2	
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_MOT_Foerderband_rueckwaerts</Name>
+							<Comment><![CDATA[ xDO%111.1_A2_2
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_MOT_horizontal_zum_Regal</Name>
+							<Comment><![CDATA[ xDO%111.2_A2_4
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_MOT_horizontal_zum_Foerderband</Name>
+							<Comment><![CDATA[ xDO%111.3_A2_4
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_MOT_vertikal_runter</Name>
+							<Comment><![CDATA[ xDO%111.4_A2_4
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_MOT_vertikal_hoch</Name>
+							<Comment><![CDATA[ xDO%111.5_A2_4
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_MOT_Ausleger_vorwaerts</Name>
+							<Comment><![CDATA[ xDO%111.6_A2_4
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_MOT_Ausleger_rueckwaerts</Name>
+							<Comment><![CDATA[ xDO%111.7_A2_4
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_K1_1_Zaehler_Zuruecksetzen</Name>
+							<Comment><![CDATA[ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_K1_2_Zaehler_Zuruecksetzen</Name>
+							<Comment><![CDATA[ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
 					</Vars>
 					<Vars VarGrpType="1">
 						<Name>PlcTask Inputs</Name>
@@ -304,79 +304,6 @@
 						<Var>
 							<Name>GVL.diNotAus_Kanal_B</Name>
 							<Comment><![CDATA[ xDI%139.3_S1_2]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_Ref_Taster_horizontal</Name>
-							<Comment><![CDATA[ für OPC UA freigeben
- xDI%136.0_A2_2]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_Enc_horizontal_I1</Name>
-							<Comment><![CDATA[ udiDI%41.0_A2_5
- für OPC UA freigeben]]></Comment>
-							<Type>UDINT</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_Enc_horizontal_I2</Name>
-							<Comment><![CDATA[ für OPC UA freigeben
- udiDI%47.0_A2_5]]></Comment>
-							<Type>UDINT</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_Enc_vertikal_I1</Name>
-							<Comment><![CDATA[ für OPC UA freigeben
- udiDI%53.0_A2_5]]></Comment>
-							<Type>UDINT</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_Enc_vertikal_I2</Name>
-							<Comment><![CDATA[ für OPC UA freigeben
- udiDI%59.0_A2_5]]></Comment>
-							<Type>UDINT</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_LS_innen</Name>
-							<Comment><![CDATA[ für OPC UA freigeben
- xDI%136.1_A2_1
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_LS_aussen</Name>
-							<Comment><![CDATA[ xDI%136.2_A2_1
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_Ref_Taster_vertikal</Name>
-							<Comment><![CDATA[ xDI%136.3_A2_2
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_Spursensor_1_unten</Name>
-							<Comment><![CDATA[ xDI%136.4_A2_3
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_Spursensor_2_oben</Name>
-							<Comment><![CDATA[ xDI%136.5_A2_3
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_Ref_Taster_Ausleger_vorne</Name>
-							<Comment><![CDATA[ xDI%136.6_A2_2
- für OPC UA freigeben]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
-							<Name>GVL_HRL.HRL_Ref_Taster_Ausleger_hinten</Name>
-							<Comment><![CDATA[ xDI%136.7_A2_2
- für OPC UA freigeben]]></Comment>
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
@@ -511,6 +438,79 @@
 							<Name>GVL_VSG.VSG_Ref_Schalter_drehen</Name>
 							<Comment><![CDATA[ für OPC UA freigeben
  xDI%138.3_A4_2]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_Ref_Taster_horizontal</Name>
+							<Comment><![CDATA[ für OPC UA freigeben
+ xDI%136.0_A2_2]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_LS_innen</Name>
+							<Comment><![CDATA[ für OPC UA freigeben
+ xDI%136.1_A2_1
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_LS_aussen</Name>
+							<Comment><![CDATA[ xDI%136.2_A2_1
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_Enc_horizontal_I1</Name>
+							<Comment><![CDATA[ udiDI%41.0_A2_5
+ für OPC UA freigeben]]></Comment>
+							<Type>UDINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_Enc_horizontal_I2</Name>
+							<Comment><![CDATA[ für OPC UA freigeben
+ udiDI%47.0_A2_5]]></Comment>
+							<Type>UDINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_Enc_vertikal_I1</Name>
+							<Comment><![CDATA[ für OPC UA freigeben
+ udiDI%53.0_A2_5]]></Comment>
+							<Type>UDINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_Enc_vertikal_I2</Name>
+							<Comment><![CDATA[ für OPC UA freigeben
+ udiDI%59.0_A2_5]]></Comment>
+							<Type>UDINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_Ref_Taster_vertikal</Name>
+							<Comment><![CDATA[ xDI%136.3_A2_2
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_Spursensor_1_unten</Name>
+							<Comment><![CDATA[ xDI%136.4_A2_3
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_Spursensor_2_oben</Name>
+							<Comment><![CDATA[ xDI%136.5_A2_3
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_Ref_Taster_Ausleger_vorne</Name>
+							<Comment><![CDATA[ xDI%136.6_A2_2
+ für OPC UA freigeben]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_HRL.HRL_Ref_Taster_Ausleger_hinten</Name>
+							<Comment><![CDATA[ xDI%136.7_A2_2
+ für OPC UA freigeben]]></Comment>
 							<Type>BOOL</Type>
 						</Var>
 					</Vars>

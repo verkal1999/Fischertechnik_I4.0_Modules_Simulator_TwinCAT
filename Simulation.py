@@ -389,6 +389,23 @@ class SPS_Simulator:
                 for symbol_or_key, symbol in resolved
             }
 
+    def read_udint_snapshot(
+        self,
+        symbols_or_keys: Sequence[str],
+    ) -> Dict[str, AdsReadResult]:
+        resolved = [
+            (symbol_or_key, self.resolve_udint_symbol(symbol_or_key))
+            for symbol_or_key in symbols_or_keys
+        ]
+        with self.open_connection() as plc:
+            return {
+                symbol_or_key: AdsReadResult(
+                    symbol=symbol,
+                    value=int(plc.read_by_name(symbol, pyads.PLCTYPE_UDINT)),
+                )
+                for symbol_or_key, symbol in resolved
+            }
+
     def read_udint(self, symbol_or_key: str) -> AdsReadResult:
         symbol = self.resolve_udint_symbol(symbol_or_key)
         with self.open_connection() as plc:

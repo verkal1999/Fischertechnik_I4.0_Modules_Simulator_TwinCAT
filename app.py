@@ -1,5 +1,5 @@
 """
-Streamlit-Oberflaeche fuer den Fischertechnik-Simulator.
+Streamlit-Oberfläche für den Fischertechnik-Simulator.
 
 Aufruf:
     streamlit run app.py
@@ -13,6 +13,7 @@ import time
 from typing import Any, Dict
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 import sim_config as cfg
 from sim_actions import (
@@ -20,7 +21,7 @@ from sim_actions import (
     action_manual_remove_workpiece,
     action_reset,
     action_start,
-    read_bool_sensors,
+    read_scene_snapshot,
     read_string_values,
 )
 
@@ -35,10 +36,7 @@ st.markdown(
     """
     <style>
     .stApp {
-        background:
-            radial-gradient(circle at top left, rgba(74, 182, 143, 0.10), transparent 28%),
-            radial-gradient(circle at top right, rgba(104, 141, 255, 0.08), transparent 24%),
-            linear-gradient(180deg, #09111c 0%, #0c1726 100%);
+        background: linear-gradient(180deg, #09111c 0%, #0c1726 100%);
         color: #dce7f5;
     }
     div[data-testid="stHorizontalBlock"] {
@@ -47,7 +45,7 @@ st.markdown(
     .stButton > button {
         font-size: 0.98rem;
         font-weight: 600;
-        border-radius: 10px;
+        border-radius: 8px;
         padding: 0.58rem 1.15rem;
         border: 1px solid rgba(140, 170, 210, 0.22);
         background: linear-gradient(180deg, #15253a 0%, #101b2b 100%);
@@ -63,6 +61,9 @@ st.markdown(
     textarea {
         font-family: Consolas, "Courier New", monospace !important;
         font-size: 0.78rem !important;
+    }
+    div[data-testid="stDataFrame"] {
+        font-size: 0.82rem;
     }
     </style>
     """,
@@ -80,7 +81,10 @@ def _init_state() -> None:
         "last_result": None,
         "last_error": None,
         "sensors": {},
+        "udints": {},
         "strings": {},
+        "missing_workpiece_at_pickup": False,
+        "workpiece_stage": "initial",
     }
     for key, val in defaults.items():
         if key not in st.session_state:
@@ -116,6 +120,10 @@ def _start_action(name: str, fn) -> None:
     if ss.running:
         return
 
+    if name in {"init", "start", "reset"}:
+        ss.missing_workpiece_at_pickup = False
+        ss.workpiece_stage = "initial"
+
     ss.running = True
     ss.current_action = name
     ss.last_error = None
@@ -138,9 +146,12 @@ def _start_action(name: str, fn) -> None:
 
 def _refresh_sensors() -> None:
     try:
-        ss.sensors = read_bool_sensors()
+        snapshot = read_scene_snapshot()
+        ss.sensors = snapshot["bools"]
+        ss.udints = snapshot["udints"]
     except Exception as exc:
         ss.sensors = {"_error": str(exc)}
+        ss.udints = {}
 
     try:
         ss.strings = read_string_values()
@@ -148,125 +159,353 @@ def _refresh_sensors() -> None:
         ss.strings = {}
 
 
-def _c(sensors: dict, key: str) -> str:
-    return "#2fce83" if sensors.get(key, False) else "#4e5f77"
+_WORKPIECE_STAGE_ORDER = {
+    "initial": 0,
+    "rbg": 1,
+    "ls_inner": 2,
+    "ls_outer": 3,
+    "missing": 4,
+}
 
 
-def _err_c(sensors: dict, key: str) -> str:
-    return "#ff5a4f" if sensors.get(key, False) else "#2fce83"
+def _advance_workpiece_stage(stage: str) -> None:
+    current = str(ss.get("workpiece_stage", "initial"))
+    if _WORKPIECE_STAGE_ORDER[stage] >= _WORKPIECE_STAGE_ORDER.get(current, 0):
+        ss.workpiece_stage = stage
 
 
-def _svg_lamp_row(x: int, y: int, label: str, fill: str) -> str:
-    return (
-        f'<circle cx="{x}" cy="{y}" r="7" fill="{fill}" stroke="#09111a" stroke-width="1.4"/>'
-        f'<circle cx="{x}" cy="{y}" r="11" fill="none" stroke="{fill}" stroke-opacity="0.28" stroke-width="2"/>'
-        f'<text x="{x + 16}" y="{y + 4}" font-size="9.5" fill="#dbe6f4">{label}</text>'
-    )
+def _update_workpiece_state() -> None:
+    process_marker = str(ss.strings.get("last_executed_process", "")).strip("\x00")
+    if process_marker == cfg.VSG_MISSING_WORKPIECE_MARKER:
+        ss.missing_workpiece_at_pickup = True
+        ss.workpiece_stage = "missing"
+        return
 
+    if ss.current_action != "start" or "_error" in ss.sensors:
+        return
 
-def build_process_svg(sensors: dict) -> str:
-    ts_front = bool(sensors.get("ts_ausleger_vorne", False))
-    ts_back = bool(sensors.get("ts_ausleger_hinten", False))
-    ls_inner = bool(sensors.get("ls_inner", False))
-    ls_outer = bool(sensors.get("ls_outer", False))
+    if ss.get("missing_workpiece_at_pickup", False):
+        ss.workpiece_stage = "missing"
+        return
 
-    rgb_runtime_inner = bool(sensors.get("GVL_HRL.HRL_LS_innen", False))
-    rgb_runtime_outer = bool(sensors.get("GVL_HRL.HRL_LS_aussen", False))
-    vsg_error = bool(
-        sensors.get("VSG_SkillSet.VSG_Skill_SuctionProcess.VSG_ErrorDetected", False)
-    )
-    opc_diag_finished = bool(sensors.get("diag_finished", False))
-    vsg_diag_finished = bool(
-        sensors.get("VSG_SkillSet.VSG_DiagnosisHandler.Diag_finished", False)
-    )
-    c_ts_front = _c(sensors, "ts_ausleger_vorne")
-    c_ts_back = _c(sensors, "ts_ausleger_hinten")
-    c_ls_inner = _c(sensors, "ls_inner")
-    c_ls_outer = _c(sensors, "ls_outer")
-    c_rgb_inner = _c(sensors, "GVL_HRL.HRL_LS_innen")
-    c_rgb_outer = _c(sensors, "GVL_HRL.HRL_LS_aussen")
-    c_vsg_error = _err_c(sensors, "VSG_SkillSet.VSG_Skill_SuctionProcess.VSG_ErrorDetected")
-    c_opc_diag = _c(sensors, "diag_finished")
-    c_vsg_diag = _c(sensors, "VSG_SkillSet.VSG_DiagnosisHandler.Diag_finished")
+    ls_outer = _b(ss.sensors, "ls_outer")
+    ls_inner = _b(ss.sensors, "ls_inner")
+    current_step = _u(ss.udints, "HRL_SkillSet.HRL_NMethod_Auslagern.CurrentStep")
+    ts_front = _b(ss.sensors, "ts_ausleger_vorne")
+    vsg_error = _b(ss.sensors, "VSG_SkillSet.VSG_Skill_SuctionProcess.VSG_ErrorDetected")
 
     if ls_outer:
-        workpiece_x, workpiece_y = 616, 167
-        step_label = "Schritt 3: Werkstueck steht am Bandende fuer die VSG-Aufnahme bereit."
+        _advance_workpiece_stage("ls_outer")
     elif ls_inner:
-        workpiece_x, workpiece_y = 350, 167
-        step_label = "Schritt 2: Werkstueck hat den Bandanfang erreicht."
-    elif ts_front:
-        workpiece_x, workpiece_y = 246, 166
-        step_label = "RGB faehrt aus: Werkstueck wird aus dem Regal auf das Band uebergeben."
-    elif ts_back:
-        workpiece_x, workpiece_y = 104, 160
-        step_label = "Schritt 1: Werkstueck liegt im Regalbediengeraet im Rueckzugsbereich."
-    else:
-        workpiece_x, workpiece_y = -100, -100
-        step_label = "Kein Werkstueck eindeutig detektiert."
+        _advance_workpiece_stage("ls_inner")
+    elif (
+        ts_front
+        or current_step in {30, 40, 50, 60, 65, 70}
+        or _b(ss.sensors, "GVL_HRL_Sim.HRL_MOT_Ausleger_vorwaerts")
+        or _b(ss.sensors, "GVL_HRL_Sim.HRL_MOT_Ausleger_rueckwaerts")
+    ):
+        _advance_workpiece_stage("rbg")
+    elif vsg_error and _WORKPIECE_STAGE_ORDER.get(ss.workpiece_stage, 0) >= _WORKPIECE_STAGE_ORDER["ls_outer"]:
+        ss.missing_workpiece_at_pickup = True
+        ss.workpiece_stage = "missing"
 
-    fork_extension = 60 if ts_front else 30 if ts_back else 42
-    fork_fill = "#f6b73c" if ts_front else "#8090a7"
-    carriage_glow = "#89d7ff" if ts_front else "#5e7692"
-    active_shelf_fill = "#274257" if ts_back and not ls_inner and not ls_outer else "#162334"
-    active_shelf_stroke = "#78c4ff" if ts_back and not ls_inner and not ls_outer else "#2a4158"
 
-    if workpiece_x > 0:
-        workpiece_anim = (
-            '<animate attributeName="opacity" values="1;0.45;1" dur="0.65s" repeatCount="indefinite"/>'
-            if ts_front
-            else ""
-        )
-        workpiece = (
+def _b(values: dict, key: str) -> bool:
+    return bool(values.get(key, False))
+
+
+def _u(values: dict, key: str, default: int = 0) -> int:
+    try:
+        return int(values.get(key, default))
+    except (TypeError, ValueError):
+        return default
+
+
+def _clamp(value: float, lower: float, upper: float) -> float:
+    return max(lower, min(upper, value))
+
+
+def _scale(value: float, source_min: float, source_max: float, target_min: float, target_max: float) -> float:
+    if source_min == source_max:
+        return (target_min + target_max) / 2
+    ratio = (value - source_min) / (source_max - source_min)
+    ratio = _clamp(ratio, 0, 1)
+    return target_min + ratio * (target_max - target_min)
+
+
+def _lamp_color(active: bool, *, error: bool = False) -> str:
+    if error and active:
+        return "#ff5a4f"
+    return "#2fce83" if active else "#53647a"
+
+
+def _svg_lamp_row(x: int, y: int, label: str, active: bool, *, error: bool = False) -> str:
+    fill = _lamp_color(active, error=error)
+    return (
+        f'<circle cx="{x}" cy="{y}" r="6.5" fill="{fill}" stroke="#071019" stroke-width="1.2"/>'
+        f'<circle cx="{x}" cy="{y}" r="10" fill="none" stroke="{fill}" stroke-opacity="0.25" stroke-width="2"/>'
+        f'<text x="{x + 15}" y="{y + 4}" font-size="10" fill="#dbe6f4">{label}</text>'
+    )
+
+
+def _svg_value_row(x: int, y: int, label: str, value: str, *, warn: bool = False) -> str:
+    fill = "#ffb25f" if warn else "#dbe6f4"
+    return (
+        f'<text x="{x}" y="{y}" font-size="10" fill="#8fa6bf">{label}</text>'
+        f'<text x="{x + 170}" y="{y}" font-size="10" font-weight="700" fill="{fill}">{value}</text>'
+    )
+
+
+def _workpiece_svg(x: float, y: float, *, active: bool, missing: bool = False) -> str:
+    anim = (
+        '<animate attributeName="opacity" values="1;0.55;1" dur="0.8s" repeatCount="indefinite"/>'
+        if active
+        else ""
+    )
+    if missing:
+        return (
             f'<g>'
-            f'<rect x="{workpiece_x - 12}" y="{workpiece_y - 12}" width="24" height="24" rx="5" '
-            f'fill="#f1a329" stroke="#ffcf6b" stroke-width="2">{workpiece_anim}</rect>'
-            f'<line x1="{workpiece_x - 5}" y1="{workpiece_y}" x2="{workpiece_x + 5}" y2="{workpiece_y}" '
-            f'stroke="#7f4d00" stroke-width="1.4"/>'
-            f'<line x1="{workpiece_x}" y1="{workpiece_y - 5}" x2="{workpiece_x}" y2="{workpiece_y + 5}" '
-            f'stroke="#7f4d00" stroke-width="1.4"/>'
+            f'<rect x="{x - 13:.1f}" y="{y - 13:.1f}" width="26" height="26" rx="5" '
+            f'fill="#c93636" stroke="#ffb0a8" stroke-width="2">{anim}</rect>'
+            f'<text x="{x:.1f}" y="{y + 7:.1f}" text-anchor="middle" font-size="23" '
+            f'font-weight="900" fill="#fff4f2">?</text>'
             f'</g>'
         )
+    return (
+        f'<g>'
+        f'<rect x="{x - 13:.1f}" y="{y - 13:.1f}" width="26" height="26" rx="5" '
+        f'fill="#f2a12b" stroke="#ffd06f" stroke-width="2">{anim}</rect>'
+        f'<line x1="{x - 5:.1f}" y1="{y:.1f}" x2="{x + 5:.1f}" y2="{y:.1f}" '
+        f'stroke="#7d4b00" stroke-width="1.3"/>'
+        f'<line x1="{x:.1f}" y1="{y - 5:.1f}" x2="{x:.1f}" y2="{y + 5:.1f}" '
+        f'stroke="#7d4b00" stroke-width="1.3"/>'
+        f'</g>'
+    )
+
+
+def _step_text(
+    step: int,
+    hrl_error: bool,
+    vsg_error: bool,
+    ls_outer: bool,
+    ls_inner: bool,
+    ts_back: bool,
+    missing_at_pickup: bool = False,
+) -> str:
+    if vsg_error and not ls_outer:
+        return "VSG-Fehler: Werkstück fehlt an der äußeren HRL-Lichtschranke."
+    if missing_at_pickup:
+        return "Werkstück wurde an ls_aussen entfernt. VSG wird mit fehlendem Werkstück gestartet."
+    if hrl_error:
+        return "HRL-Auslagern meldet eine Störung. ErrorId steht in der Wertetabelle."
+
+    labels = {
+        10: "RBG fährt horizontal zur Regalposition.",
+        20: "RBG fährt vertikal zur Regalebene.",
+        30: "Ausleger fährt in das Regal und nimmt das Werkstück.",
+        40: "Ausleger fährt mit Werkstück zurück.",
+        50: "RBG fährt horizontal zur Übergabeposition am Förderband.",
+        60: "RBG fährt vertikal zur Übergabehöhe.",
+        65: "Übergabe an den Bandanfang, Warten auf ls_innen.",
+        70: "Förderband transportiert das Werkstück zur VSG-Aufnahmeposition.",
+        100: "HRL-Auslagern abgeschlossen.",
+        900: "HRL-Auslagern im Fehlerzustand.",
+    }
+    if step in labels:
+        return labels[step]
+    if ls_outer:
+        return "Werkstück steht an ls_aussen für die VSG-Aufnahme bereit."
+    if ls_inner:
+        return "Werkstück steht am Bandanfang direkt neben dem Regal."
+    if ts_back:
+        return "Werkstück liegt im Hochregallager/RBG-Rückzugsbereich."
+    return "Kein Werkstücksignal aktiv. Anzeige folgt den SPS-Simulationswerten."
+
+
+def build_process_svg(
+    sensors: dict,
+    udints: dict,
+    *,
+    missing_workpiece_at_pickup: bool = False,
+    workpiece_stage: str = "initial",
+) -> str:
+    ts_front = _b(sensors, "ts_ausleger_vorne")
+    ts_back = _b(sensors, "ts_ausleger_hinten")
+    ls_inner = _b(sensors, "ls_inner")
+    ls_outer = _b(sensors, "ls_outer")
+    sim_mode = _b(sensors, "sim")
+
+    hrl_busy = _b(sensors, "HRL_SkillSet.HRL_NMethod_Auslagern.Busy")
+    hrl_error = _b(sensors, "HRL_SkillSet.HRL_NMethod_Auslagern.Error")
+    vsg_error = _b(sensors, "VSG_SkillSet.VSG_Skill_SuctionProcess.VSG_ErrorDetected")
+    diag_finished = _b(sensors, "diag_finished")
+    vsg_diag_finished = _b(sensors, "VSG_SkillSet.VSG_DiagnosisHandler.Diag_finished")
+
+    mot_h_to_rack = _b(sensors, "GVL_HRL_Sim.HRL_MOT_horizontal_zum_Regal")
+    mot_h_to_belt = _b(sensors, "GVL_HRL_Sim.HRL_MOT_horizontal_zum_Foerderband")
+    mot_v_down = _b(sensors, "GVL_HRL_Sim.HRL_MOT_vertikal_runter")
+    mot_v_up = _b(sensors, "GVL_HRL_Sim.HRL_MOT_vertikal_hoch")
+    mot_fork_out = _b(sensors, "GVL_HRL_Sim.HRL_MOT_Ausleger_vorwaerts")
+    mot_fork_in = _b(sensors, "GVL_HRL_Sim.HRL_MOT_Ausleger_rueckwaerts")
+    mot_belt_forward = _b(sensors, "GVL_HRL_Sim.HRL_MOT_Foerderband_vorwaerts")
+    mot_belt_backward = _b(sensors, "GVL_HRL_Sim.HRL_MOT_Foerderband_rueckwaerts")
+
+    vsg_compressor = _b(sensors, "GVL_VSG_Sim.VSG_Kompressor")
+    vsg_valve = _b(sensors, "GVL_VSG_Sim.VSG_MV_Vakuum")
+    vsg_move = any(
+        _b(sensors, key)
+        for key in (
+            "GVL_VSG_Sim.VSG_MOT_vertikal_runter",
+            "GVL_VSG_Sim.VSG_MOT_vertikal_hoch",
+            "GVL_VSG_Sim.VSG_MOT_horizontal_vorwaerts",
+            "GVL_VSG_Sim.VSG_MOT_horizontal_rueckwaerts",
+            "GVL_VSG_Sim.VSG_MOT_drehen_CW",
+            "GVL_VSG_Sim.VSG_MOT_drehen_CCW",
+        )
+    )
+
+    horizontal = _u(udints, "horizontal_1")
+    vertical = _u(udints, "vertical_1")
+    current_step = _u(udints, "HRL_SkillSet.HRL_NMethod_Auslagern.CurrentStep")
+    error_id = _u(udints, "HRL_SkillSet.HRL_NMethod_Auslagern.ErrorId")
+    vsg_error_code = _u(udints, "VSG_SkillSet.VSG_Skill_SuctionProcess.VSG_ErrorCode")
+    vsg_error_code_display = vsg_error_code if vsg_error else 0
+
+    h_transfer = cfg.HRL_REQUEST.horizontal_transfer_i1
+    h_shelf = cfg.HRL_REQUEST.horizontal_shelf_i1
+    v_min = min(cfg.HRL_REQUEST.vertical_transfer_i1, cfg.HRL_REQUEST.vertical_shelf_i1)
+    v_max = max(cfg.HRL_REQUEST.vertical_transfer_i1, cfg.HRL_REQUEST.vertical_shelf_i1)
+
+    rack_x, rack_y, rack_w, rack_h = 150, 190, 230, 250
+    rail_x, rail_y, rail_w, rail_h = 404, 190, 70, 250
+    belt_x, belt_y, belt_w, belt_h = 150, 106, 366, 58
+    band_center_y = belt_y + belt_h / 2
+    outer_x = belt_x + 48
+    inner_x = belt_x + belt_w - 50
+    transfer_x = rail_x + 21
+
+    carriage_y = _scale(horizontal, h_transfer, h_shelf, rail_y + 30, rail_y + rail_h - 42)
+    lift_y = _scale(vertical, v_min, v_max, rail_y + rail_h - 28, rail_y + 34)
+    shelf_row = int(round(_scale(vertical, v_min, v_max, 3, 0)))
+    shelf_row = int(_clamp(shelf_row, 0, 3))
+
+    rack_cells = []
+    for row in range(4):
+        for col in range(2):
+            x = rack_x + 24 + col * 88
+            y = rack_y + 28 + row * 50
+            active_cell = row == shelf_row and not (ls_inner or ls_outer)
+            fill = "#24364a" if active_cell else "#172434"
+            stroke = "#80c6ff" if active_cell else "#334960"
+            rack_cells.append(
+                f'<rect x="{x}" y="{y}" width="70" height="34" rx="4" fill="{fill}" '
+                f'stroke="{stroke}" stroke-width="1.3"/>'
+            )
+    rack_cells_svg = "".join(rack_cells)
+
+    fork_extension = 58 if (ts_front or mot_fork_out) else 24 if ts_back else 40
+    fork_color = "#f6b73c" if (mot_fork_out or mot_fork_in or ts_front) else "#8a9ab0"
+    carriage_stroke = "#7fd4ff" if (mot_h_to_rack or mot_h_to_belt or mot_v_down or mot_v_up or hrl_busy) else "#5c7895"
+    belt_color = "#2fce83" if (mot_belt_forward or mot_belt_backward) else "#617181"
+
+    missing_at_pickup = bool(missing_workpiece_at_pickup) or workpiece_stage == "missing"
+    workpiece_visible = True
+    workpiece_active = any((mot_belt_forward, mot_fork_out, mot_fork_in, mot_h_to_rack, mot_h_to_belt))
+    workpiece_missing = False
+    if missing_at_pickup:
+        workpiece_x, workpiece_y = outer_x, band_center_y
+        workpiece_active = True
+        workpiece_missing = True
+    elif workpiece_stage == "ls_outer":
+        workpiece_x, workpiece_y = outer_x, band_center_y
+    elif workpiece_stage == "ls_inner":
+        workpiece_x, workpiece_y = inner_x, band_center_y
+    elif workpiece_stage == "rbg":
+        workpiece_x, workpiece_y = transfer_x - 28, carriage_y + 21
     else:
-        workpiece = ""
+        workpiece_x = rack_x + 72
+        workpiece_y = rack_y + 45 + shelf_row * 50
 
-    belt_stripes = "".join(
-        f'<line x1="{x}" y1="148" x2="{x}" y2="186" stroke="#1b252c" stroke-width="2"/>'
-        for x in range(332, 652, 28)
+    workpiece = (
+        _workpiece_svg(workpiece_x, workpiece_y, active=workpiece_active, missing=workpiece_missing)
+        if workpiece_visible
+        else ""
     )
+    step_label = _step_text(current_step, hrl_error, vsg_error, ls_outer, ls_inner, ts_back, missing_at_pickup)
 
-    rgb_lamps = "".join(
+    belt_arrows = "".join(
+        f'<polygon points="{x},127 {x + 15},119 {x + 15},135" fill="{belt_color}" opacity="0.88"/>'
+        for x in range(236, 454, 56)
+    )
+    if mot_belt_backward:
+        belt_arrows = "".join(
+            f'<polygon points="{x + 15},127 {x},119 {x},135" fill="{belt_color}" opacity="0.88"/>'
+            for x in range(236, 454, 56)
+        )
+    elif not mot_belt_forward:
+        belt_arrows = belt_arrows.replace('opacity="0.88"', 'opacity="0.25"')
+
+    hrl_motion_arrow = ""
+    if mot_h_to_rack:
+        hrl_motion_arrow = (
+            f'<line x1="{rail_x + rail_w + 18}" y1="{carriage_y + 10:.1f}" '
+            f'x2="{rail_x + rail_w + 18}" y2="{carriage_y + 66:.1f}" '
+            f'stroke="#2fce83" stroke-width="3" marker-end="url(#arr)"/>'
+        )
+    elif mot_h_to_belt:
+        hrl_motion_arrow = (
+            f'<line x1="{rail_x + rail_w + 18}" y1="{carriage_y + 26:.1f}" '
+            f'x2="{rail_x + rail_w + 18}" y2="{carriage_y - 30:.1f}" '
+            f'stroke="#2fce83" stroke-width="3" marker-end="url(#arr)"/>'
+        )
+
+    status_rows = "".join(
         [
-            _svg_lamp_row(40, 242, "TS Ausleger vorne", c_ts_front),
-            _svg_lamp_row(40, 265, "TS Ausleger hinten", c_ts_back),
-            _svg_lamp_row(40, 288, "RGB LS innen (Runtime)", c_rgb_inner),
-            _svg_lamp_row(40, 311, "RGB LS aussen (Runtime)", c_rgb_outer),
+            _svg_value_row(622, 129, "HRL CurrentStep", str(current_step)),
+            _svg_value_row(622, 149, "HRL horizontal I1", str(horizontal)),
+            _svg_value_row(622, 169, "HRL vertikal I1", str(vertical)),
+            _svg_value_row(622, 189, "HRL ErrorId", str(error_id), warn=hrl_error),
+            _svg_value_row(622, 209, "VSG ErrorCode", str(vsg_error_code_display), warn=vsg_error),
         ]
     )
 
-    conveyor_lamps = "".join(
+    system_lamps = "".join(
         [
-            _svg_lamp_row(302, 290, "ls_innen Band-Anfang", c_ls_inner),
-            _svg_lamp_row(500, 290, "ls_aussen Band-Ende", c_ls_outer),
+            _svg_lamp_row(624, 253, "SimMode", sim_mode),
+            _svg_lamp_row(624, 276, "HRL Busy", hrl_busy),
+            _svg_lamp_row(624, 299, "HRL Error", hrl_error, error=True),
+            _svg_lamp_row(624, 322, "OPC Diag_finished", diag_finished),
+            _svg_lamp_row(624, 345, "VSG Diag_finished", vsg_diag_finished),
+        ]
+    )
+    sensor_lamps = "".join(
+        [
+            _svg_lamp_row(822, 253, "ls_innen", ls_inner),
+            _svg_lamp_row(822, 276, "ls_aussen", ls_outer),
+            _svg_lamp_row(822, 299, "Ausleger vorne", ts_front),
+            _svg_lamp_row(822, 322, "Ausleger hinten", ts_back),
+            _svg_lamp_row(822, 345, "VSG Fehler", vsg_error, error=True),
+        ]
+    )
+    actuator_lamps = "".join(
+        [
+            _svg_lamp_row(624, 395, "HRL Band vorwärts", mot_belt_forward),
+            _svg_lamp_row(624, 418, "HRL Ausleger vorwärts", mot_fork_out),
+            _svg_lamp_row(624, 441, "HRL horizontal aktiv", mot_h_to_rack or mot_h_to_belt),
+            _svg_lamp_row(822, 395, "VSG Bewegung", vsg_move),
+            _svg_lamp_row(822, 418, "VSG Kompressor", vsg_compressor),
+            _svg_lamp_row(822, 441, "VSG Ventil", vsg_valve),
         ]
     )
 
-    vsg_lamps = "".join(
-        [
-            _svg_lamp_row(730, 242, "VSG Fehler", c_vsg_error),
-            _svg_lamp_row(730, 265, "OPC UA Diag_finished", c_opc_diag),
-            _svg_lamp_row(730, 288, "VSG Diagnosis Diag_finished", c_vsg_diag),
-        ]
-    )
-
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 350"
-    style="width:100%;background:#0b1420;border-radius:18px;font-family:Segoe UI,Arial,sans-serif;">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 520"
+    style="width:100%;background:#0b1420;border-radius:8px;font-family:Segoe UI,Arial,sans-serif;">
   <defs>
-    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="#7c90a8"/>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L0,9 L9,4.5 z" fill="#2fce83"/>
     </marker>
     <filter id="softGlow">
-      <feGaussianBlur stdDeviation="2.6" result="blur"/>
+      <feGaussianBlur stdDeviation="2.3" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
@@ -274,103 +513,88 @@ def build_process_svg(sensors: dict) -> str:
     </filter>
   </defs>
 
-  <rect x="0" y="0" width="920" height="42" rx="18" fill="#111b2c"/>
-  <text x="460" y="26" text-anchor="middle" font-size="13" font-weight="700" fill="#dbe7f7">{step_label}</text>
+  <rect x="0" y="0" width="1040" height="48" rx="8" fill="#111b2c"/>
+  <text x="26" y="30" font-size="15" font-weight="700" fill="#dbe7f7">Draufsicht HRL/RBG/Förderband/VSG</text>
+  <text x="320" y="30" font-size="13" fill="#aabbd0">{step_label}</text>
 
-  <rect x="16" y="58" width="248" height="272" rx="18" fill="#122233" stroke="#335d86" stroke-width="1.8"/>
-  <text x="38" y="84" font-size="20" font-weight="800" fill="#8cd0ff">RGB</text>
-  <text x="38" y="101" font-size="10" fill="#7ea2c5">Regalbediengeraet</text>
+  <rect x="34" y="58" width="550" height="416" rx="8" fill="#0f1926" stroke="#273b51" stroke-width="1.3"/>
+  <text x="58" y="452" font-size="10" fill="#8fa6bf">
+    <tspan x="58" dy="0">Realer Bezug: Regal links, RBG-Schiene rechts daneben,</tspan>
+    <tspan x="58" dy="14">Förderband oberhalb direkt am Regal, VSG links dahinter.</tspan>
+  </text>
 
-  <rect x="32" y="114" width="116" height="98" rx="10" fill="#101928" stroke="#2d4058" stroke-width="1.2"/>
-  <rect x="48" y="126" width="88" height="14" rx="3" fill="#172435" stroke="#25384d" stroke-width="1"/>
-  <rect x="48" y="146" width="88" height="14" rx="3" fill="#172435" stroke="#25384d" stroke-width="1"/>
-  <rect x="48" y="166" width="88" height="14" rx="3" fill="{active_shelf_fill}" stroke="{active_shelf_stroke}" stroke-width="1.4"/>
-  <rect x="48" y="186" width="88" height="14" rx="3" fill="#172435" stroke="#25384d" stroke-width="1"/>
-  <line x1="48" y1="124" x2="48" y2="202" stroke="#31465e" stroke-width="3"/>
-  <line x1="136" y1="124" x2="136" y2="202" stroke="#31465e" stroke-width="3"/>
+  <rect x="48" y="74" width="86" height="140" rx="8" fill="#21172a" stroke="#8757a0" stroke-width="1.4"/>
+  <text x="70" y="98" font-size="18" font-weight="800" fill="#e4b4ff">VSG</text>
+  <rect x="84" y="112" width="14" height="74" rx="6" fill="#4a2d58" stroke="#c89dde" stroke-width="1.2"/>
+  <ellipse cx="91" cy="196" rx="25" ry="9" fill="{'#5b2e6e' if vsg_compressor else '#2a1932'}" stroke="#d8b2ed" stroke-width="1.2"/>
+  <line x1="91" y1="196" x2="{outer_x}" y2="{band_center_y}" stroke="{'#2fce83' if vsg_valve else '#6f597b'}" stroke-width="3" stroke-dasharray="6,5"/>
 
-  <rect x="174" y="108" width="12" height="116" rx="5" fill="#20364f" stroke="#4f7396" stroke-width="1.2"/>
-  <rect x="160" y="151" width="38" height="30" rx="7" fill="#19314c" stroke="{carriage_glow}" stroke-width="1.8"
-        filter="{'url(#softGlow)' if ts_front else 'none'}"/>
-  <rect x="198" y="163" width="{fork_extension}" height="6" rx="3" fill="{fork_fill}" stroke="#f7d890" stroke-width="1.1"/>
-  <rect x="{198 + fork_extension - 8}" y="159" width="8" height="14" rx="2" fill="{fork_fill}" stroke="#f7d890" stroke-width="1.1"/>
-  <circle cx="180" cy="142" r="5" fill="#89a8c7"/>
-  <circle cx="180" cy="192" r="5" fill="#89a8c7"/>
-  <text x="34" y="226" font-size="9.5" fill="#96aec7">I/O direkt am RGB</text>
-  {rgb_lamps}
+  <rect x="{belt_x}" y="{belt_y}" width="{belt_w}" height="{belt_h}" rx="8" fill="#18232b" stroke="#4d626d" stroke-width="1.3"/>
+  <text x="{belt_x + 70}" y="{belt_y - 12}" font-size="15" font-weight="800" fill="#8ce0a6">FÖRDERBAND</text>
+  <line x1="{belt_x + 16}" y1="{band_center_y}" x2="{belt_x + belt_w - 16}" y2="{band_center_y}" stroke="#26333d" stroke-width="28" stroke-linecap="round"/>
+  {belt_arrows}
+  <text x="{outer_x}" y="{belt_y - 32}" text-anchor="middle" font-size="10" fill="#cbd8e6">ls_aussen</text>
+  <line x1="{outer_x}" y1="{belt_y - 24}" x2="{outer_x}" y2="{band_center_y - 14}" stroke="#7d93ac" stroke-width="1.1" stroke-dasharray="4,3"/>
+  <circle cx="{outer_x}" cy="{band_center_y}" r="12" fill="{_lamp_color(ls_outer)}" stroke="#071019" stroke-width="1.5"/>
+  <text x="{inner_x}" y="{belt_y - 32}" text-anchor="middle" font-size="10" fill="#cbd8e6">ls_innen</text>
+  <line x1="{inner_x}" y1="{belt_y - 24}" x2="{inner_x}" y2="{band_center_y - 14}" stroke="#7d93ac" stroke-width="1.1" stroke-dasharray="4,3"/>
+  <circle cx="{inner_x}" cy="{band_center_y}" r="12" fill="{_lamp_color(ls_inner)}" stroke="#071019" stroke-width="1.5"/>
 
-  <line x1="262" y1="166" x2="286" y2="166" stroke="#6a7f96" stroke-width="2" marker-end="url(#arr)"/>
+  <rect x="{rack_x}" y="{rack_y}" width="{rack_w}" height="{rack_h}" rx="8" fill="#121f30" stroke="#356086" stroke-width="1.5"/>
+  <text x="{rack_x + 22}" y="{rack_y + 23}" font-size="17" font-weight="800" fill="#8fcfff">HOCHREGALLAGER</text>
+  {rack_cells_svg}
 
-  <rect x="278" y="58" width="406" height="272" rx="18" fill="#122016" stroke="#2c6f46" stroke-width="1.8"/>
-  <text x="302" y="84" font-size="20" font-weight="800" fill="#8ce0a6">FOERDERBAND</text>
-  <text x="302" y="101" font-size="10" fill="#87b798">Werkstueck-Transport und Lichtschranken</text>
-  <rect x="324" y="148" width="338" height="38" rx="8" fill="#1a2329" stroke="#4d626d" stroke-width="1.1"/>
-  {belt_stripes}
-  <circle cx="324" cy="167" r="18" fill="#20292f" stroke="#6d838f" stroke-width="2"/>
-  <circle cx="324" cy="167" r="6" fill="#12181c" stroke="#8ba0ad" stroke-width="1"/>
-  <circle cx="662" cy="167" r="18" fill="#20292f" stroke="#6d838f" stroke-width="2"/>
-  <circle cx="662" cy="167" r="6" fill="#12181c" stroke="#8ba0ad" stroke-width="1"/>
-  <polygon points="442,160 456,165 442,170" fill="#5cb67d" opacity="0.85"/>
-  <polygon points="482,160 496,165 482,170" fill="#5cb67d" opacity="0.85"/>
-  <polygon points="522,160 536,165 522,170" fill="#5cb67d" opacity="0.85"/>
+  <rect x="{rail_x}" y="{rail_y}" width="{rail_w}" height="{rail_h}" rx="8" fill="#142235" stroke="#587da0" stroke-width="1.5"/>
+  <text x="{rail_x + rail_w / 2}" y="{rail_y - 12}" text-anchor="middle" font-size="13" font-weight="800" fill="#9bcfff">RBG-SCHIENE</text>
+  <line x1="{rail_x + rail_w / 2}" y1="{rail_y + 20}" x2="{rail_x + rail_w / 2}" y2="{rail_y + rail_h - 20}" stroke="#6f849b" stroke-width="6" stroke-linecap="round"/>
+  <rect x="{rail_x + 8}" y="{carriage_y:.1f}" width="{rail_w - 16}" height="42" rx="7" fill="#192f4a" stroke="{carriage_stroke}" stroke-width="2" filter="url(#softGlow)"/>
+  <text x="{rail_x + rail_w / 2}" y="{carriage_y + 26:.1f}" text-anchor="middle" font-size="10" fill="#dce7f5">RBG</text>
+  <rect x="{rail_x + 8 - fork_extension}" y="{carriage_y + 17:.1f}" width="{fork_extension}" height="8" rx="4" fill="{fork_color}" stroke="#f7d890" stroke-width="1"/>
+  <rect x="{rail_x + 8 - fork_extension}" y="{carriage_y + 12:.1f}" width="9" height="18" rx="3" fill="{fork_color}" stroke="#f7d890" stroke-width="1"/>
+  {hrl_motion_arrow}
 
-  <line x1="350" y1="148" x2="350" y2="124" stroke="#7d93ac" stroke-width="1.1" stroke-dasharray="4,3"/>
-  <circle cx="350" cy="114" r="10" fill="{c_ls_inner}" stroke="#101820" stroke-width="1.6"
-          filter="{'url(#softGlow)' if ls_inner else 'none'}"/>
-  <text x="350" y="96" text-anchor="middle" font-size="9" fill="#d9e7f4">ls_innen</text>
-  <text x="350" y="84" text-anchor="middle" font-size="8" fill="#92a6bc">Band-Anfang</text>
-
-  <line x1="616" y1="148" x2="616" y2="124" stroke="#7d93ac" stroke-width="1.1" stroke-dasharray="4,3"/>
-  <circle cx="616" cy="114" r="10" fill="{c_ls_outer}" stroke="#101820" stroke-width="1.6"
-          filter="{'url(#softGlow)' if ls_outer else 'none'}"/>
-  <text x="616" y="96" text-anchor="middle" font-size="9" fill="#d9e7f4">ls_aussen</text>
-  <text x="616" y="84" text-anchor="middle" font-size="8" fill="#92a6bc">Band-Ende</text>
-  <text x="302" y="226" font-size="9.5" fill="#96c4a3">I/O direkt am Foerderband</text>
-  {conveyor_lamps}
-
-  <line x1="684" y1="166" x2="710" y2="166" stroke="#6a7f96" stroke-width="2" marker-end="url(#arr)"/>
-
-  <rect x="698" y="58" width="206" height="272" rx="18" fill="#201327" stroke="#7d4d93" stroke-width="1.8"/>
-  <text x="730" y="84" font-size="20" font-weight="800" fill="#e0a7ff">VSG</text>
-  <text x="730" y="101" font-size="10" fill="#c895df">Vakuumsauggreifer</text>
-  <rect x="722" y="118" width="158" height="12" rx="6" fill="#3a2445" stroke="#9468a8" stroke-width="1"/>
-  <rect x="790" y="130" width="22" height="62" rx="8" fill="#452753" stroke="#b283c9" stroke-width="1.4"/>
-  <ellipse cx="801" cy="200" rx="24" ry="10" fill="#2a1533" stroke="#c294db" stroke-width="1.4"/>
-  <ellipse cx="801" cy="199" rx="13" ry="5" fill="#5b2e6e" stroke="#e1b6f8" stroke-width="1"/>
-  <rect x="760" y="146" width="82" height="10" rx="5" fill="#533061" stroke="#cb9ce2" stroke-width="1"/>
-  <text x="722" y="226" font-size="9.5" fill="#d8c2e6">I/O direkt am VSG</text>
-  {vsg_lamps}
+  <line x1="{rail_x + rail_w + 40}" y1="{rail_y + 26}" x2="{rail_x + rail_w + 40}" y2="{rail_y + rail_h - 26}" stroke="#243244" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="{rail_x + rail_w + 40}" cy="{lift_y:.1f}" r="10" fill="{'#2fce83' if (mot_v_down or mot_v_up) else '#64758a'}" stroke="#111b2c" stroke-width="1.5"/>
+  <text x="{rail_x + rail_w + 56}" y="{lift_y + 4:.1f}" font-size="10" fill="#b9cadc">Höhe</text>
 
   {workpiece}
 
-  <rect x="0" y="334" width="920" height="16" rx="8" fill="#111b2c"/>
-  <text x="24" y="346" font-size="9" fill="#cad7e6">Legende:</text>
-  <circle cx="84" cy="343" r="5" fill="#2fce83"/>
-  <text x="94" y="346" font-size="9" fill="#cad7e6">aktiv</text>
-  <circle cx="146" cy="343" r="5" fill="#4e5f77"/>
-  <text x="156" y="346" font-size="9" fill="#cad7e6">inaktiv</text>
-  <circle cx="220" cy="343" r="5" fill="#ff5a4f"/>
-  <text x="230" y="346" font-size="9" fill="#cad7e6">Fehler</text>
-  <text x="546" y="346" font-size="9" fill="#cad7e6">RGB Runtime innen={str(rgb_runtime_inner)} | aussen={str(rgb_runtime_outer)} | VSG Fehler={str(vsg_error)} | OPC={str(opc_diag_finished)} | VSG Diag={str(vsg_diag_finished)}</text>
+  <rect x="590" y="82" width="444" height="392" rx="8" fill="#101b29" stroke="#2a3e55" stroke-width="1.3"/>
+  <text x="622" y="107" font-size="16" font-weight="800" fill="#dbe7f7">SPS-gebundener Zustand</text>
+  {status_rows}
+  <line x1="622" y1="229" x2="1002" y2="229" stroke="#263a50" stroke-width="1"/>
+  {system_lamps}
+  {sensor_lamps}
+  <line x1="622" y1="370" x2="1002" y2="370" stroke="#263a50" stroke-width="1"/>
+  {actuator_lamps}
+
+  <rect x="0" y="500" width="1040" height="20" rx="8" fill="#111b2c"/>
+  <circle cx="26" cy="510" r="5" fill="#2fce83"/>
+  <text x="38" y="513" font-size="9.5" fill="#cad7e6">aktiv</text>
+  <circle cx="90" cy="510" r="5" fill="#53647a"/>
+  <text x="102" y="513" font-size="9.5" fill="#cad7e6">inaktiv</text>
+  <circle cx="168" cy="510" r="5" fill="#ff5a4f"/>
+  <text x="180" y="513" font-size="9.5" fill="#cad7e6">Fehler</text>
 </svg>"""
 
 
 _drain_queues()
 _refresh_sensors()
+_update_workpiece_state()
 
-st.title("Fischertechnik Simulator - Steuerungsoberflaeche")
-st.caption("RGB-Darstellung, Sensorstatus und manuelle Werkstueck-Entnahme in einer Ansicht.")
+st.title("Fischertechnik Simulator - Steuerungsoberfläche")
+st.caption("Draufsicht mit SPS-gebundenen HRL-, RBG-, Förderband- und VSG-Werten.")
 
 if ss.running:
-    st.info(f"{ss.current_action.upper()} wird ausgefuehrt. Bitte warten.")
+    st.info(f"{ss.current_action.upper()} wird ausgeführt. Bitte warten.")
 elif ss.last_error:
     with st.expander("Fehlerdetails", expanded=True):
         st.code(ss.last_error, language="python")
 elif ss.last_result is not None:
     st.success("Letzte Aktion erfolgreich abgeschlossen.")
 
-col_init, col_start, col_reset, col_remove, col_clear, col_pad = st.columns(
-    [1.3, 1.3, 1.3, 1.9, 1.2, 2.0]
+col_init, col_start, col_reset, col_remove, col_pad = st.columns(
+    [1.3, 1.3, 1.3, 1.9, 3.2]
 )
 
 with col_init:
@@ -404,68 +628,129 @@ with col_reset:
 
 with col_remove:
     if st.button(
-        "Werkstueck manuell entnehmen",
+        "Werkstück manuell entnehmen",
         disabled=ss.running,
         use_container_width=True,
     ):
         _start_action("manuelle_entnahme", action_manual_remove_workpiece)
         st.rerun()
 
-with col_clear:
-    if st.button("Log leeren", use_container_width=True):
-        ss.log_lines = []
-        st.rerun()
+sensor_rows = []
+actuator_rows = []
+udint_rows = []
+
+if "_error" not in ss.sensors:
+    for key in cfg.SENSOR_POLL_SYMBOLS:
+        value = ss.sensors.get(key)
+        if value is None:
+            continue
+
+        sensor_rows.append(
+            {
+                "Signal": cfg.SENSOR_LABELS.get(key, key),
+                "Wert": "Ein" if value else "Aus",
+            }
+        )
+
+    for key in cfg.ACTUATOR_POLL_SYMBOLS:
+        value = ss.sensors.get(key)
+        if value is None:
+            continue
+
+        actuator_rows.append(
+            {
+                "Aktor/Zustand": cfg.ACTUATOR_LABELS.get(key, key),
+                "Wert": "Ein" if value else "Aus",
+            }
+        )
+
+    for key in cfg.UDINT_POLL_SYMBOLS:
+        value = ss.udints.get(key)
+        if value is None:
+            continue
+        if (
+            key == "VSG_SkillSet.VSG_Skill_SuctionProcess.VSG_ErrorCode"
+            and not ss.sensors.get("VSG_SkillSet.VSG_Skill_SuctionProcess.VSG_ErrorDetected", False)
+        ):
+            value = 0
+
+        udint_rows.append(
+            {
+                "Wert": cfg.UDINT_LABELS.get(key, key),
+                "UDINT": value,
+            }
+        )
 
 st.markdown("---")
-st.markdown(
-    f'<div style="margin:4px 0 12px 0">{build_process_svg(ss.sensors)}</div>',
-    unsafe_allow_html=True,
+components.html(
+    f"""
+    <div style="margin:4px 0 12px 0">
+        {build_process_svg(
+            ss.sensors,
+            ss.udints,
+            missing_workpiece_at_pickup=ss.missing_workpiece_at_pickup,
+            workpiece_stage=ss.workpiece_stage,
+        )}
+    </div>
+    """,
+    height=1120,
+    scrolling=False,
 )
 
-sensor_col, log_col = st.columns([1, 1.15], gap="medium")
+sensor_col, actuator_col, udint_col = st.columns([1, 1, 1], gap="medium")
 
 with sensor_col:
     st.subheader("Sensorwerte")
-
     if "_error" in ss.sensors:
         st.error(f"ADS-Verbindungsfehler: {ss.sensors['_error']}")
+    elif sensor_rows:
+        st.dataframe(
+            sensor_rows,
+            hide_index=True,
+            use_container_width=True,
+            height=320,
+            column_config={
+                "Signal": st.column_config.TextColumn("Signal", width="medium"),
+                "Wert": st.column_config.TextColumn("Wert", width="small"),
+            },
+        )
     else:
-        rows = []
-        for key in cfg.SENSOR_POLL_SYMBOLS:
-            value = ss.sensors.get(key)
-            if value is None:
-                continue
+        st.caption("Keine Sensorwerte verfügbar.")
 
-            rows.append(
-                {
-                    "Sensor": cfg.SENSOR_LABELS.get(key, key),
-                    "Wert": "True" if value else "False",
-                }
-            )
+with actuator_col:
+    if actuator_rows:
+        st.subheader("Aktoren und Skillstatus")
+        st.dataframe(
+            actuator_rows,
+            hide_index=True,
+            use_container_width=True,
+            height=320,
+            column_config={
+                "Aktor/Zustand": st.column_config.TextColumn("Aktor/Zustand", width="medium"),
+                "Wert": st.column_config.TextColumn("Wert", width="small"),
+            },
+        )
 
-        if rows:
-            st.dataframe(rows, hide_index=True, use_container_width=True)
-        else:
-            st.caption("Keine Sensorwerte verfuegbar.")
+with udint_col:
+    if udint_rows:
+        st.subheader("Encoder und Schrittwerte")
+        st.dataframe(
+            udint_rows,
+            hide_index=True,
+            use_container_width=True,
+            height=320,
+            column_config={
+                "Wert": st.column_config.TextColumn("Wert", width="medium"),
+                "UDINT": st.column_config.NumberColumn("UDINT", width="small"),
+            },
+        )
 
-    if ss.strings:
-        st.markdown("**OPC-UA Tracking**")
-        for key, value in ss.strings.items():
-            display_value = value.strip("\x00") if value else ""
-            st.markdown(f"- `{key}`: `{display_value or '(leer)'}`")
-
-with log_col:
-    st.subheader("Protokoll")
-    log_text = "\n".join(ss.log_lines[-80:])
-    st.text_area(
-        label="log",
-        value=log_text,
-        height=340,
-        disabled=True,
-        label_visibility="collapsed",
-        key="log_area",
-    )
+if ss.strings:
+    st.markdown("**OPC-UA Tracking**")
+    for key, value in ss.strings.items():
+        display_value = value.strip("\x00") if value else ""
+        st.markdown(f"- `{key}`: `{display_value or '(leer)'}`")
 
 if ss.running:
-    time.sleep(1)
+    time.sleep(0.25)
     st.rerun()
