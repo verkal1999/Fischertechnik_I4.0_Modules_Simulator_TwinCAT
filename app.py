@@ -18,7 +18,6 @@ import streamlit.components.v1 as components
 import sim_config as cfg
 from sim_actions import (
     action_init,
-    action_manual_remove_workpiece,
     action_reset,
     action_start,
     read_scene_snapshot,
@@ -593,13 +592,13 @@ elif ss.last_error:
 elif ss.last_result is not None:
     st.success("Letzte Aktion erfolgreich abgeschlossen.")
 
-col_init, col_start, col_reset, col_remove, col_pad = st.columns(
-    [1.3, 1.3, 1.3, 1.9, 3.2]
+col_init, col_start, col_reset, col_pad = st.columns(
+    [1.3, 1.3, 1.3, 5.1]
 )
 
 with col_init:
     if st.button(
-        "Init (Zelle 1)",
+        "Init",
         disabled=ss.running,
         use_container_width=True,
         type="primary",
@@ -609,7 +608,7 @@ with col_init:
 
 with col_start:
     if st.button(
-        "Start (Zelle 2)",
+        "Start",
         disabled=ss.running,
         use_container_width=True,
         type="primary",
@@ -619,20 +618,11 @@ with col_start:
 
 with col_reset:
     if st.button(
-        "Reset (Zelle 3)",
+        "Reset",
         disabled=ss.running,
         use_container_width=True,
     ):
         _start_action("reset", action_reset)
-        st.rerun()
-
-with col_remove:
-    if st.button(
-        "Werkstück manuell entnehmen",
-        disabled=ss.running,
-        use_container_width=True,
-    ):
-        _start_action("manuelle_entnahme", action_manual_remove_workpiece)
         st.rerun()
 
 sensor_rows = []

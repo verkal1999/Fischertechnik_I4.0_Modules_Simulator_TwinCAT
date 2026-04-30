@@ -250,31 +250,6 @@ def action_reset(log: LogCallback = _noop) -> Dict[str, Any]:
     }
 
 
-def action_manual_remove_workpiece(log: LogCallback = _noop) -> Dict[str, Any]:
-    """
-    Simuliert eine manuelle Werkstück-Entnahme am Bandende.
-
-    Entsprechend der Anforderung wird ls_aussen / ls_outer auf False gesetzt.
-    """
-    sps = _make_sps()
-
-    log("Setze ls_outer = False (manuelle Werkstück-Entnahme).")
-    write_receipt = sps.write_bool("ls_outer", False)
-
-    outer_sim = sps.read_bool("ls_outer")
-    outer_runtime = sps.read_bool("GVL_HRL.HRL_LS_aussen")
-    log(
-        "Manuelle Entnahme abgeschlossen - "
-        f"ls_outer_sim={outer_sim.value}, ls_outer_runtime={outer_runtime.value}"
-    )
-
-    return {
-        "write": write_receipt.as_dict(),
-        "ls_outer_sim": outer_sim.as_dict(),
-        "ls_outer_runtime": outer_runtime.as_dict(),
-    }
-
-
 # ---------------------------------------------------------------------------
 # Sensor-Lesen für das UI
 # ---------------------------------------------------------------------------

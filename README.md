@@ -85,7 +85,7 @@ classify the fault.
 - `sim_config.py` contains the scenario configuration, OPC UA connection
   settings, request payloads, and UI sensor mappings.
 - `sim_actions.py` maps the notebook-style workflow to executable actions such
-  as initialization, process start, manual workpiece removal, reset, and sensor
+  as initialization, process start, automated fault injection, reset, and sensor
   polling.
 - `app.py` provides a Streamlit-based user interface for executing and
   monitoring the simulated scenario.
@@ -125,9 +125,9 @@ the missing workpiece.
 2. Start the Streamlit UI.
 3. Run the initialization action to prepare PLC variables and skill plans.
 4. Start `HRL_NMethod_Auslagern`.
-5. Trigger the simulated manual workpiece removal at the conveyor end.
-6. Start or observe the VSG process and the resulting fault detection.
-7. Use the reset action to clear the VSG fault state for another run.
+5. Observe the automated workpiece removal at the conveyor end and the resulting
+   VSG fault detection.
+6. Use the reset action to clear the VSG fault state for another run.
 
 ## Relation to Manufacturing ExcH Agents
 
