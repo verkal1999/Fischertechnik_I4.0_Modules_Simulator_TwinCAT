@@ -18,7 +18,6 @@ build/
 .vs/
 
 # Zertifikate / Secrets
-certs/
 
 # Leere Hilfsdateien (Artefakte aus Shell-Befehlen)
 99
@@ -28,7 +27,6 @@ streamlit
 Dict[str
 
 # Output
-out/
 
 # TwinCAT generierte Outputs
 PLCreX_outputs/
